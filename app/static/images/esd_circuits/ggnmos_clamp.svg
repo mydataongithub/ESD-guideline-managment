@@ -1,0 +1,35 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f8f9fa"/>
+  <text x="200" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">Grounded-Gate NMOS (ggNMOS) Clamp</text>
+  
+  <!-- NMOS Symbol -->
+  <rect x="170" y="100" width="60" height="80" fill="none" stroke="black" stroke-width="2"/>
+  <line x1="150" y1="140" x2="170" y2="140" stroke="black" stroke-width="2"/>
+  <line x1="230" y1="140" x2="250" y2="140" stroke="black" stroke-width="2"/>
+  <line x1="200" y1="100" x2="200" y2="80" stroke="black" stroke-width="2"/>
+  <line x1="200" y1="180" x2="200" y2="200" stroke="black" stroke-width="2"/>
+  
+  <!-- Gate connection to ground -->
+  <line x1="150" y1="140" x2="150" y2="200" stroke="black" stroke-width="2"/>
+  <text x="145" y="165" text-anchor="end" font-family="Arial" font-size="10">Gate</text>
+  
+  <!-- Drain/Source labels -->
+  <text x="200" y="75" text-anchor="middle" font-family="Arial" font-size="10">Drain</text>
+  <text x="200" y="215" text-anchor="middle" font-family="Arial" font-size="10">Source</text>
+  
+  <!-- Parasitic BJT -->
+  <circle cx="280" cy="140" r="30" fill="none" stroke="red" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="280" y="185" text-anchor="middle" font-family="Arial" font-size="10" fill="red">Parasitic</text>
+  <text x="280" y="195" text-anchor="middle" font-family="Arial" font-size="10" fill="red">NPN</text>
+  
+  <!-- Power Rails -->
+  <line x1="50" y1="80" x2="350" y2="80" stroke="red" stroke-width="3"/>
+  <text x="360" y="85" font-family="Arial" font-size="12" fill="red">I/O</text>
+  
+  <line x1="50" y1="200" x2="350" y2="200" stroke="blue" stroke-width="3"/>
+  <text x="360" y="205" font-family="Arial" font-size="12" fill="blue">VSS</text>
+  
+  <!-- Annotations -->
+  <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="11">Triggers at ~6-8V via snapback</text>
+  <text x="200" y="265" text-anchor="middle" font-family="Arial" font-size="11">Low holding voltage ~1-2V</text>
+</svg>

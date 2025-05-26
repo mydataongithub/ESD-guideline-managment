@@ -1,0 +1,11 @@
+Enhance the guideline generator with dashboard view.
+* total rules, separate esd rules and latchup rules
+* technologies
+* import excel,pdf doc files of already existing guidelines
+* browse rules: edit view rules new and update
+
+use mcp server to analyze imported documents in order to import rules texts images in database 
+lets validate by human in the loop(esd expert) before importing data in database
+in database also store images and explaining texts
+store specific templates for guidelines for each technology
+user could modify templates via dashboard

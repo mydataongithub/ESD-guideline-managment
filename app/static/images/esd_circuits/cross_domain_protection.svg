@@ -1,0 +1,39 @@
+<svg width="400" height="250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#f8f9fa"/>
+  <text x="200" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">Cross-Domain ESD Protection</text>
+  
+  <!-- Domain 1 -->
+  <rect x="20" y="50" width="150" height="150" fill="none" stroke="green" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="95" y="70" text-anchor="middle" font-family="Arial" font-size="14" fill="green">Domain 1</text>
+  <line x1="30" y1="85" x2="160" y2="85" stroke="red" stroke-width="2"/>
+  <text x="35" y="82" font-family="Arial" font-size="12" fill="red">VDD1</text>
+  <line x1="30" y1="180" x2="160" y2="180" stroke="blue" stroke-width="2"/>
+  <text x="35" y="177" font-family="Arial" font-size="12" fill="blue">VSS1</text>
+  
+  <!-- Domain 2 -->
+  <rect x="230" y="50" width="150" height="150" fill="none" stroke="purple" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="305" y="70" text-anchor="middle" font-family="Arial" font-size="14" fill="purple">Domain 2</text>
+  <line x1="240" y1="85" x2="370" y2="85" stroke="red" stroke-width="2"/>
+  <text x="345" y="82" font-family="Arial" font-size="12" fill="red">VDD2</text>
+  <line x1="240" y1="180" x2="370" y2="180" stroke="blue" stroke-width="2"/>
+  <text x="345" y="177" font-family="Arial" font-size="12" fill="blue">VSS2</text>
+  
+  <!-- Signal Line -->
+  <line x1="100" y1="130" x2="300" y2="130" stroke="black" stroke-width="2"/>
+  <text x="200" y="125" text-anchor="middle" font-family="Arial" font-size="12">Signal</text>
+  
+  <!-- Back-to-back Diodes -->
+  <polygon points="180,120 180,140 190,130" fill="black"/>
+  <line x1="190" y1="130" x2="190" y2="85" stroke="black" stroke-width="1"/>
+  <polygon points="210,140 210,120 220,130" fill="black"/>
+  <line x1="210" y1="130" x2="210" y2="85" stroke="black" stroke-width="1"/>
+  
+  <polygon points="180,130 190,120 190,140" fill="black"/>
+  <line x1="180" y1="130" x2="180" y2="180" stroke="black" stroke-width="1"/>
+  <polygon points="220,130 210,120 210,140" fill="black"/>
+  <line x1="220" y1="130" x2="220" y2="180" stroke="black" stroke-width="1"/>
+  
+  <!-- Resistor -->
+  <rect x="195" y="125" width="10" height="10" fill="none" stroke="black" stroke-width="1"/>
+  <text x="200" y="150" text-anchor="middle" font-family="Arial" font-size="10">100Ω</text>
+</svg>

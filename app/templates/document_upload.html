@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ESD & Latch-up Guidelines</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/document_styles.css') }}">
+    <style>
+        .upload-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .file-input-container {
+            margin-bottom: 20px;
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .file-input-container:hover {
+            border-color: #007bff;
+        }
+        
+        .file-input-container.dragover {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .selected-file {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .file-details {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 80%;
+        }
+        
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #0069d9;
+        }
+        
+        .submit-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .progress-container {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 5px;
+            background-color: #e9ecef;
+            border-radius: 2.5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .supported-formats {
+            margin-top: 15px;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #28a745;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ESD & Latch-up Guideline Generator</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/documents/ui/list">Documents</a></li>
+                <li><a href="/documents/ui/upload" class="active">Upload</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Upload Document</h2>
+            <p>Upload Excel, PDF, or Word documents to extract ESD and latch-up rules.</p>
+            
+            <div class="upload-container">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="file-input-container" id="drop-area">
+                        <label for="file-input">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <p>Drag and drop file here or click to browse</p>
+                        </label>
+                        <input type="file" id="file-input" name="file" accept=".xlsx,.xls,.pdf,.doc,.docx">
+                    </div>
+                    
+                    <div class="selected-file" id="selected-file">
+                        <div class="file-details">
+                            <span class="file-name" id="file-name"></span>
+                            <button type="button" class="remove-btn" id="remove-file">✕</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description (optional):</label>
+                        <textarea id="description" name="description" rows="3" class="form-control"></textarea>
+                    </div>
+                    
+                    <div class="progress-container" id="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                        <div class="upload-status" id="upload-status">Uploading...</div>
+                    </div>
+                    
+                    <div class="error-message" id="error-message"></div>
+                    <div class="success-message" id="success-message"></div>
+                    
+                    <button type="submit" class="submit-btn" id="submit-btn" disabled>Upload Document</button>
+                    
+                    <div class="supported-formats">
+                        Supported formats: Excel (.xlsx, .xls), PDF (.pdf), Word (.doc, .docx)
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>Automated Guideline System | Version 1.0</p>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const selectedFile = document.getElementById('selected-file');
+            const fileName = document.getElementById('file-name');
+            const removeFile = document.getElementById('remove-file');
+            const submitBtn = document.getElementById('submit-btn');
+            const progressContainer = document.getElementById('progress-container');
+            const progress = document.getElementById('progress');
+            const uploadStatus = document.getElementById('upload-status');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            const uploadForm = document.getElementById('upload-form');
+            
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Highlight drop area when file is dragged over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('dragover');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('dragover');
+            }
+            
+            // Handle dropped files
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    updateFileDetails();
+                }
+            }
+            
+            // Handle selected files via click
+            fileInput.addEventListener('change', updateFileDetails);
+            
+            function updateFileDetails() {
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    fileName.textContent = file.name;
+                    selectedFile.style.display = 'block';
+                    submitBtn.disabled = false;
+                    resetMessages();
+                }
+            }
+            
+            // Remove selected file
+            removeFile.addEventListener('click', function() {
+                fileInput.value = '';
+                selectedFile.style.display = 'none';
+                submitBtn.disabled = true;
+                resetMessages();
+            });
+            
+            function resetMessages() {
+                errorMessage.style.display = 'none';
+                errorMessage.textContent = '';
+                successMessage.style.display = 'none';
+                successMessage.textContent = '';
+                progressContainer.style.display = 'none';
+                progress.style.width = '0%';
+            }
+            
+            // Handle form submission
+            uploadForm.addEventListener('submit', handleSubmit);
+            
+            function handleSubmit(e) {
+                e.preventDefault();
+                
+                if (!fileInput.files.length) {
+                    showError('Please select a file to upload');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                const description = document.getElementById('description').value;
+                if (description) {
+                    formData.append('description', description);
+                }
+                
+                uploadFile(formData);
+            }
+            
+            function uploadFile(formData) {
+                resetMessages();
+                progressContainer.style.display = 'block';
+                submitBtn.disabled = true;
+                
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progress.style.width = percentComplete + '%';
+                        uploadStatus.textContent = `Uploading... ${Math.round(percentComplete)}%`;
+                    }
+                });
+                
+                xhr.addEventListener('load', function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const response = JSON.parse(xhr.responseText);
+                        showSuccess('Document uploaded successfully! ID: ' + response.id);
+                        fileInput.value = '';
+                        selectedFile.style.display = 'none';
+                        document.getElementById('description').value = '';
+                    } else {
+                        let errorMsg = 'Upload failed';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMsg = response.detail || errorMsg;
+                        } catch (e) {}
+                        showError(errorMsg);
+                    }
+                    submitBtn.disabled = false;
+                });
+                
+                xhr.addEventListener('error', function() {
+                    showError('Network error occurred');
+                    submitBtn.disabled = false;
+                });
+                
+                xhr.open('POST', '/documents/upload');
+                xhr.send(formData);
+            }
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                progressContainer.style.display = 'none';
+            }
+            
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                progressContainer.style.display = 'none';
+                
+                // Auto-redirect after a short delay
+                setTimeout(function() {
+                    window.location.href = '/documents/ui/list';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESD/Latch-up Guidelines</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/document_styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>ESD & Latch-up Guideline Generator</h1>
+        <p>Automated generation and version control for semiconductor guidelines</p>
+        <nav>
+            <ul>
+                <li><a href="/" class="active">Home</a></li>
+                <li><a href="/documents/ui/list">Documents</a></li>
+                <li><a href="/documents/ui/upload">Upload Document</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="controls">
+            <h2>Select Technology</h2>
+            <div class="control-group">
+                <select id="technologySelector">
+                    <option value="">Loading technologies...</option>
+                </select>
+                <div class="button-group">
+                    <button id="generateBtn" class="btn-primary">Generate/Update Selected</button>
+                    <button id="viewLatestBtn" class="btn-secondary">View Latest for Selected</button>
+                    <button id="viewHistoryBtn" class="btn-secondary">View History for Selected</button>
+                </div>
+            </div>
+        </section>
+        
+        <section id="status">
+            <h2>System Status</h2>
+            <div id="systemStatus">Loading system status...</div>
+        </section>
+        
+        <section id="output">
+            <h2>Output</h2>
+            <pre id="generationStatus">Ready to generate guidelines...</pre>
+        </section>
+        
+        <section id="quickStart">
+            <h2>Quick Start Guide</h2>
+            <ol>
+                <li>Select a technology from the dropdown above</li>
+                <li>Click "Generate/Update Selected" to create or update guidelines</li>
+                <li>Use "View Latest" to see the current guidelines</li>
+                <li>Use "View History" to see all versions and changes</li>
+            </ol>
+            <p><strong>Note:</strong> All changes are automatically versioned using Git.</p>
+        </section>
+        
+        <section id="features">
+            <h2>Available Features</h2>
+            <div class="feature-cards">
+                <div class="feature-card">
+                    <h3>Document Import</h3>
+                    <p>Upload Excel, PDF, or Word documents to extract rules and guidelines.</p>
+                    <a href="/documents/ui/upload" class="feature-link">Upload Documents</a>
+                </div>
+                <div class="feature-card">
+                    <h3>Document Management</h3>
+                    <p>Browse and manage uploaded documents, process them to extract rules.</p>
+                    <a href="/documents/ui/list" class="feature-link">Manage Documents</a>
+                </div>
+                <div class="feature-card">
+                    <h3>AI Document Processing</h3>
+                    <p>Process documents with AI assistance for better rule extraction accuracy.</p>
+                    <a href="/documents/ui/mcp" class="feature-link">MCP Processing</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>Automated Guideline System | 
+           <a href="/status" target="_blank">System Status</a> | 
+           <a href="https://github.com" target="_blank">Repository</a>
+        </p>
+    </footer>
+    <script src="{{ url_for('static', path='/script.js') }}"></script>
+</body>
+</html>

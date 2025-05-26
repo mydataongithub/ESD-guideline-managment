@@ -1,0 +1,51 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f8f9fa"/>
+  <text x="200" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">Latchup Structure & Guard Ring</text>
+  
+  <!-- P-substrate -->
+  <rect x="50" y="200" width="300" height="80" fill="#ffcccc" stroke="black"/>
+  <text x="200" y="250" text-anchor="middle" font-family="Arial" font-size="14">P-substrate</text>
+  
+  <!-- N-well -->
+  <rect x="100" y="120" width="200" height="80" fill="#ccccff" stroke="black"/>
+  <text x="200" y="165" text-anchor="middle" font-family="Arial" font-size="14">N-well</text>
+  
+  <!-- PMOS -->
+  <rect x="120" y="100" width="60" height="20" fill="#ff9999" stroke="black"/>
+  <text x="150" y="95" text-anchor="middle" font-family="Arial" font-size="12">PMOS</text>
+  
+  <!-- NMOS -->
+  <rect x="220" y="180" width="60" height="20" fill="#9999ff" stroke="black"/>
+  <text x="250" y="175" text-anchor="middle" font-family="Arial" font-size="12">NMOS</text>
+  
+  <!-- Guard Rings -->
+  <rect x="80" y="110" width="240" height="100" fill="none" stroke="green" stroke-width="4"/>
+  <text x="75" y="105" text-anchor="end" font-family="Arial" font-size="12" fill="green">N+ Guard Ring</text>
+  
+  <rect x="60" y="90" width="280" height="140" fill="none" stroke="blue" stroke-width="4"/>
+  <text x="55" y="85" text-anchor="end" font-family="Arial" font-size="12" fill="blue">P+ Guard Ring</text>
+  
+  <!-- Parasitic BJTs -->
+  <path d="M 150 120 L 150 140 L 180 140 L 180 160" stroke="red" stroke-width="2" fill="none" marker-end="url(#arrowred)"/>
+  <text x="165" y="135" font-family="Arial" font-size="10" fill="red">PNP</text>
+  
+  <path d="M 250 180 L 250 160 L 220 160 L 220 140" stroke="orange" stroke-width="2" fill="none" marker-end="url(#arroworange)"/>
+  <text x="235" y="155" font-family="Arial" font-size="10" fill="orange">NPN</text>
+  
+  <!-- Well Taps -->
+  <circle cx="90" cy="160" r="5" fill="black"/>
+  <text x="85" y="155" text-anchor="end" font-family="Arial" font-size="10">P+ tap</text>
+  
+  <circle cx="310" cy="160" r="5" fill="black"/>
+  <text x="315" y="155" text-anchor="start" font-family="Arial" font-size="10">N+ tap</text>
+  
+  <!-- Arrows -->
+  <defs>
+    <marker id="arrowred" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="red"/>
+    </marker>
+    <marker id="arroworange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="orange"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,139 @@
+{
+    "process_type": "28nm CMOS",
+    "esd_levels": {
+        "hbm": "2kV",
+        "cdm": "500V",
+        "mm": "200V"
+    },
+    "latch_up_rules": {
+        "rule1": "All I/O cells must use guard rings with minimum 5μm width.",
+        "nwell_psub_spacing_io": "8μm",
+        "guard_ring_width": "5.0μm",
+        "substrate_contact_spacing": "15μm maximum",
+        "layout_guidelines": [
+            "Keep PMOS and NMOS devices separated by minimum 10μm",
+            "Use guard rings around all analog circuits",
+            "Implement substrate contacts every 50μm in dense digital areas",
+            "Avoid deep N-well under sensitive analog blocks"
+        ]
+    },
+    "approved_clamps": [
+        {
+            "name": "Clamp_StdCell_P",
+            "type": "Primary",
+            "rating": "2kV HBM",
+            "application": "Standard I/O",
+            "notes": "Use for general digital I/O pads"
+        },
+        {
+            "name": "Clamp_SecCell_N",
+            "type": "Secondary",
+            "rating": "500V CDM",
+            "application": "Internal Protection",
+            "notes": "Place near sensitive internal circuits"
+        },
+        {
+            "name": "Clamp_HiVolt_IO",
+            "type": "High-Voltage",
+            "rating": "4kV HBM",
+            "application": "5V I/O",
+            "notes": "For 5V tolerant I/O interfaces"
+        },
+        {
+            "name": "Clamp_RF_LowC",
+            "type": "RF-Optimized",
+            "rating": "1.5kV HBM",
+            "application": "RF I/O",
+            "notes": "Low parasitic capacitance for RF applications"
+        }
+    ],
+    "advanced_protection_scheme": true,
+    "advanced_protection_scheme_details": "Multi-stage protection with RC-triggered power clamps and distributed secondary protection network.",
+    "design_rules": {
+        "metal_routing": [
+            {
+                "name": "ESD_Metal_Width",
+                "value": "12μm minimum",
+                "description": "Minimum metal width for primary ESD current paths"
+            },
+            {
+                "name": "ESD_Via_Array",
+                "value": "4x redundancy",
+                "description": "Via array sizing for ESD current paths"
+            }
+        ],
+        "device_placement": [
+            {
+                "name": "ESD_Device_Spacing",
+                "value": "20μm minimum",
+                "description": "Minimum spacing between ESD protection devices"
+            },
+            {
+                "name": "Guard_Ring_Overlap",
+                "value": "2μm minimum",
+                "description": "Guard ring overlap with protected circuit"
+            }
+        ]
+    },
+    "electrical_constraints": {
+        "max_resistance": "50Ω",
+        "min_trigger_voltage": "VDD + 0.7V",
+        "max_clamp_voltage": "1.5 × VDD",
+        "max_leakage": "100nA @ 85°C"
+    },
+    "simulation_requirements": [
+        {
+            "type": "TLP Characterization",
+            "description": "Device-level I-V characterization under TLP stress",
+            "tools": ["Cadence Spectre", "Synopsis HSPICE"],
+            "criteria": "Trigger voltage < 3.5V, On-resistance < 5Ω"
+        },
+        {
+            "type": "HBM Full-Chip",
+            "description": "Complete chip HBM simulation with parasitic extraction",
+            "tools": ["ESD++ Simulator", "Cadence Voltus"],
+            "criteria": "All I/O pins pass 2kV HBM without damage"
+        }
+    ],
+    "process_variations": [
+        {
+            "parameter": "Oxide Thickness",
+            "description": "Gate oxide thickness variation affects breakdown voltage",
+            "impact": "±10% trigger voltage variation",
+            "mitigation": "Design with 20% margin on trigger voltages"
+        },
+        {
+            "parameter": "Sheet Resistance",
+            "description": "Metal sheet resistance affects ESD current distribution",
+            "impact": "Up to 30% variation in current paths",
+            "mitigation": "Use wide metal lines and multiple via connections"
+        }
+    ],
+    "special_requirements": [
+        {
+            "category": "High-Speed Digital",
+            "description": "Digital interfaces >1GHz require optimized ESD capacitance"
+        },
+        {
+            "category": "Analog/Mixed-Signal",
+            "description": "Analog circuits need isolated ESD protection to prevent noise coupling"
+        }
+    ],
+    "clamp_requirements": [
+        "All ESD clamps must be pre-characterized on test structures",
+        "Trigger voltage must be at least 0.5V above maximum operating voltage",
+        "Parasitic capacitance must not exceed signal integrity budgets",
+        "ESD current paths must be verified through EM simulation"
+    ],
+    "internal_references": [
+        {
+            "title": "28nm ESD Device Library",
+            "description": "Comprehensive library of characterized ESD protection devices"
+        },
+        {
+            "title": "Layout Guidelines for 28nm",
+            "description": "Detailed layout rules and best practices"
+        }
+    ],
+    "document_status": "Active - Rev 2.1"
+}

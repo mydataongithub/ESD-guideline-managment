@@ -1,0 +1,182 @@
+{
+    "process_type": "14nm FinFET",
+    "esd_levels": {
+        "hbm": "2kV",
+        "cdm": "250V",
+        "mm": "100V"
+    },
+    "latch_up_rules": {
+        "rule1": "All I/O cells must implement triple-well isolation structure.",
+        "nwell_psub_spacing_io": "3μm",
+        "guard_ring_width": "2.0μm",
+        "substrate_contact_spacing": "5μm maximum",
+        "layout_guidelines": [
+            "Use triple-well isolation for complete latch-up immunity",
+            "Implement substrate contacts every 20μm in high-density areas",
+            "Maintain strict well-to-well spacing rules",
+            "Use dedicated ESD power domains for I/O rings"
+        ]
+    },
+    "approved_clamps": [
+        {
+            "name": "Clamp_FinFET_IO",
+            "type": "Primary",
+            "rating": "2kV HBM",
+            "application": "FinFET I/O",
+            "notes": "Optimized for FinFET process with low leakage"
+        },
+        {
+            "name": "Clamp_Core_FinFET",
+            "type": "Secondary",
+            "rating": "250V CDM",
+            "application": "Core Protection",
+            "notes": "Ultra-low capacitance for high-speed cores"
+        },
+        {
+            "name": "Clamp_Power_Advanced",
+            "type": "Power Clamp",
+            "rating": "3kV HBM",
+            "application": "Power Rail",
+            "notes": "Advanced RC-triggered clamp with fast response"
+        },
+        {
+            "name": "Clamp_SerDes_Optimized",
+            "type": "High-Speed",
+            "rating": "1kV HBM",
+            "application": "SerDes I/O",
+            "notes": "Ultra-low capacitance for 28Gbps+ operation"
+        }
+    ],
+    "advanced_protection_scheme": true,
+    "advanced_protection_scheme_details": "Advanced multi-level protection with distributed clamp network, substrate noise isolation, and adaptive trigger circuits.",
+    "design_rules": {
+        "metal_routing": [
+            {
+                "name": "ESD_Metal_Width",
+                "value": "8μm minimum",
+                "description": "Minimum metal width for ESD paths in FinFET"
+            },
+            {
+                "name": "ESD_Via_Stack",
+                "value": "6x redundancy",
+                "description": "Via stacking for low-resistance ESD paths"
+            },
+            {
+                "name": "ESD_Metal_Density",
+                "value": "80% maximum",
+                "description": "Metal density limit in ESD current regions"
+            }
+        ],
+        "device_placement": [
+            {
+                "name": "FinFET_ESD_Spacing",
+                "value": "10μm minimum",
+                "description": "Minimum spacing between FinFET ESD devices"
+            },
+            {
+                "name": "Well_Isolation",
+                "value": "Triple-well mandatory",
+                "description": "Triple-well structure for latch-up immunity"
+            }
+        ],
+        "routing_constraints": [
+            {
+                "name": "ESD_Path_Resistance",
+                "value": "25Ω maximum",
+                "description": "Maximum total resistance in ESD current path"
+            },
+            {
+                "name": "Parasitic_Inductance",
+                "value": "500pH maximum",
+                "description": "Maximum inductance in ESD path for CDM"
+            }
+        ]
+    },
+    "electrical_constraints": {
+        "max_resistance": "25Ω",
+        "min_trigger_voltage": "VDD + 0.4V",
+        "max_clamp_voltage": "1.2 × VDD",
+        "max_leakage": "10nA @ 125°C",
+        "max_capacitance": "50fF per I/O"
+    },
+    "simulation_requirements": [
+        {
+            "type": "Advanced TLP",
+            "description": "Very-fast TLP (vfTLP) characterization for CDM correlation",
+            "tools": ["Cadence Spectre", "Synopsys HSPICE", "vfTLP Tester"],
+            "criteria": "CDM correlation within 20%, trigger voltage < 2.5V"
+        },
+        {
+            "type": "EM Simulation",
+            "description": "Electromagnetic simulation of ESD current paths",
+            "tools": ["ANSYS HFSS", "Cadence Clarity"],
+            "criteria": "Current density < 5mA/μm, uniform current distribution"
+        },
+        {
+            "type": "Substrate Noise",
+            "description": "Substrate coupling analysis for mixed-signal circuits",
+            "tools": ["Cadence Substrate Storm"],
+            "criteria": "Isolation > 60dB between ESD and sensitive circuits"
+        }
+    ],
+    "process_variations": [
+        {
+            "parameter": "Fin Width Variation",
+            "description": "FinFET fin width affects device characteristics",
+            "impact": "±20% variation in trigger voltage and on-resistance",
+            "mitigation": "Statistical design with Monte Carlo verification"
+        },
+        {
+            "parameter": "Gate Length Variation",
+            "description": "Gate length variation in advanced nodes",
+            "impact": "±15% ESD device performance variation",
+            "mitigation": "Use minimum 3σ design margins"
+        },
+        {
+            "parameter": "Metal Thickness",
+            "description": "Metal stack thickness variation affects routing",
+            "impact": "Up to 25% resistance variation in ESD paths",
+            "mitigation": "Conservative routing design with via redundancy"
+        }
+    ],
+    "special_requirements": [
+        {
+            "category": "High-Speed SerDes",
+            "description": "SerDes interfaces require ultra-low capacitance ESD protection"
+        },
+        {
+            "category": "RF Millimeter-Wave",
+            "description": "mmWave circuits need specialized ESD solutions"
+        },
+        {
+            "category": "Power Management",
+            "description": "PMIC circuits require high-voltage ESD protection"
+        },
+        {
+            "category": "Memory Interfaces",
+            "description": "DDR4/5 interfaces need timing-optimized ESD protection"
+        }
+    ],
+    "clamp_requirements": [
+        "All ESD clamps must pass vfTLP characterization",
+        "CDM correlation must be verified through measurement",
+        "Parasitic extraction must include all metal layers",
+        "ESD robustness must be verified across all process corners",
+        "Substrate noise coupling must be characterized and minimized"
+    ],
+    "internal_references": [
+        {
+            "title": "14nm FinFET ESD Design Guide",
+            "description": "Comprehensive design methodology for FinFET ESD protection"
+        },
+        {
+            "title": "Advanced ESD Simulation Methodology",
+            "description": "Multi-physics simulation approach for ESD verification"
+        },
+        {
+            "title": "High-Speed I/O ESD Protection",
+            "description": "Specialized techniques for high-speed interface protection"
+        }
+    ],
+    "document_status": "Active - Rev 3.0"
+}

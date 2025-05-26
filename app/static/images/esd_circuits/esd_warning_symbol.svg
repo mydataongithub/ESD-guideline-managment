@@ -1,0 +1,24 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#f8f9fa"/>
+  
+  <!-- Warning Triangle -->
+  <polygon points="100,30 170,150 30,150" fill="#ffcc00" stroke="black" stroke-width="3"/>
+  
+  <!-- Hand symbol -->
+  <g transform="translate(100,90)">
+    <!-- Palm -->
+    <ellipse cx="0" cy="0" rx="25" ry="30" fill="black"/>
+    <!-- Fingers -->
+    <rect x="-5" y="-30" width="8" height="20" fill="black"/>
+    <rect x="5" y="-32" width="8" height="22" fill="black"/>
+    <rect x="-15" y="-28" width="8" height="18" fill="black"/>
+    <!-- Thumb -->
+    <ellipse cx="-20" cy="-5" rx="8" ry="12" fill="black" transform="rotate(-30 -20 -5)"/>
+  </g>
+  
+  <!-- Lightning bolt through hand -->
+  <path d="M 85 70 L 95 90 L 85 90 L 95 110 L 105 90 L 95 90 L 105 70" fill="yellow" stroke="black" stroke-width="2"/>
+  
+  <!-- Text -->
+  <text x="100" y="180" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">ESD SENSITIVE</text>
+</svg>

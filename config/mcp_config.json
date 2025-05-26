@@ -1,0 +1,10 @@
+{
+  "server_url": "http://localhost:3000",
+  "api_key": "",
+  "timeout_seconds": 60,
+  "extract_rules": true,
+  "extract_metadata": true,
+  "extract_images": true,
+  "use_advanced_models": true,
+  "confidence_threshold": 0.7
+}

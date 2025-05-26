@@ -1,0 +1,105 @@
+{
+    "process_type": "65nm CMOS",
+    "esd_levels": {
+        "hbm": "2kV",
+        "cdm": "750V"
+    },
+    "latch_up_rules": {
+        "rule1": "All I/O cells must implement double guard ring structure.",
+        "nwell_psub_spacing_io": "5μm",
+        "guard_ring_width": "3.0μm",
+        "substrate_contact_spacing": "20μm maximum",
+        "layout_guidelines": [
+            "Implement double guard rings for high-current I/O",
+            "Use substrate contacts every 100μm in low-density areas",
+            "Maintain 15μm separation between NMOS and PMOS in I/O drivers",
+            "Add well taps adjacent to all switching circuits"
+        ]
+    },
+    "approved_clamps": [
+        {
+            "name": "Clamp_Basic_IO",
+            "type": "Primary",
+            "rating": "2kV HBM",
+            "application": "Standard I/O",
+            "notes": "General purpose I/O protection"
+        },
+        {
+            "name": "Clamp_Core_Sec",
+            "type": "Secondary",
+            "rating": "750V CDM",
+            "application": "Core Protection",
+            "notes": "Secondary protection for core circuits"
+        },
+        {
+            "name": "Clamp_Power_Rail",
+            "type": "Power Clamp",
+            "rating": "3kV HBM",
+            "application": "Power Supply",
+            "notes": "Between VDD and VSS power rails"
+        }
+    ],
+    "advanced_protection_scheme": false,
+    "advanced_protection_scheme_details": "Standard single-stage protection with basic power clamps.",
+    "design_rules": {
+        "metal_routing": [
+            {
+                "name": "ESD_Metal_Width",
+                "value": "10μm minimum",
+                "description": "Minimum metal width for ESD current paths"
+            },
+            {
+                "name": "ESD_Via_Count",
+                "value": "2x minimum",
+                "description": "Minimum via redundancy for ESD paths"
+            }
+        ],
+        "device_placement": [
+            {
+                "name": "ESD_Device_Spacing",
+                "value": "15μm minimum",
+                "description": "Spacing between adjacent ESD devices"
+            }
+        ]
+    },
+    "electrical_constraints": {
+        "max_resistance": "75Ω",
+        "min_trigger_voltage": "VDD + 0.5V",
+        "max_clamp_voltage": "2.0 × VDD",
+        "max_leakage": "1μA @ 85°C"
+    },
+    "simulation_requirements": [
+        {
+            "type": "Basic TLP",
+            "description": "Standard TLP characterization of ESD devices",
+            "tools": ["HSPICE"],
+            "criteria": "Trigger voltage < 4.0V, On-resistance < 10Ω"
+        }
+    ],
+    "process_variations": [
+        {
+            "parameter": "Threshold Voltage",
+            "description": "Device threshold voltage variations affect ESD performance",
+            "impact": "±15% trigger voltage variation",
+            "mitigation": "Conservative design margins"
+        }
+    ],
+    "special_requirements": [
+        {
+            "category": "Standard Digital",
+            "description": "Standard CMOS digital logic implementation"
+        }
+    ],
+    "clamp_requirements": [
+        "Basic ESD clamp characterization required",
+        "Trigger voltage verification through simulation",
+        "Layout DRC compliance mandatory"
+    ],
+    "internal_references": [
+        {
+            "title": "65nm Process Design Kit",
+            "description": "Standard PDK documentation and device models"
+        }
+    ],
+    "document_status": "Active - Rev 1.3"
+}

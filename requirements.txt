@@ -1,0 +1,51 @@
+# FastAPI and web framework dependencies
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Template engine
+jinja2
+
+# Git operations
+GitPython
+
+# Markdown processing
+markdown2
+markdown  # Required for template_utils.py
+
+# Data validation and serialization
+pydantic>=1.10,<3.0
+
+# Additional utilities
+python-dateutil
+requests  # For downloading images and HTTP requests
+
+# Database
+sqlalchemy>=2.0
+alembic
+psycopg2-binary  # For PostgreSQL, or use sqlite for development
+
+# Document processing
+python-docx
+PyPDF2
+openpyxl
+pandas
+Pillow  # For image processing
+
+# MCP Server integration
+httpx
+websockets
+
+# File upload handling
+aiofiles
+
+# Background tasks
+celery
+redis
+
+# Development and testing (optional)
+pytest
+pytest-asyncio
+
+# Static file serving (included with FastAPI)
+# aiofiles==23.2.1  # Uncomment if you need async file operations

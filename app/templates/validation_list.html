@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ESD & Latch-up Guidelines</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/validation_styles.css') }}">
+    <script src="{{ url_for('static', path='/js/validation.js') }}" defer></script>
+    <style>
+        .validation-list {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .validation-list th, .validation-list td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .validation-list th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .validation-list tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .approved {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .rejected {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .needs-review {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .filter-tab:hover {
+            background-color: #f1f1f1;
+        }
+
+        .filter-tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .confidence-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .confidence-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .high {
+            background-color: #28a745;
+        }
+
+        .medium {
+            background-color: #ffc107;
+        }
+
+        .low {
+            background-color: #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>ESD & Latch-up Guideline Generator</h1>
+            <p>Validation Queue Management</p>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/documents/ui/upload">Upload Documents</a></li>
+                    <li><a href="/documents/ui/list">Document Management</a></li>
+                    <li><a href="/documents/ui/mcp">MCP Processing</a></li>
+                    <li><a href="/validation/ui/list" class="active">Validation Queue</a></li>
+                    <li><a href="/validation/ui/dashboard">Validation Dashboard</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        <section>
+            <h2>Validation Queue</h2>
+            <p>Review and approve rules extracted from documents.</p>
+
+            <div class="filter-tabs">
+                <a href="/validation/ui/list" class="filter-tab {% if current_status == 'all' %}active{% endif %}">All</a>
+                <a href="/validation/ui/list?status=pending" class="filter-tab {% if current_status == 'pending' %}active{% endif %}">Pending</a>
+                <a href="/validation/ui/list?status=approved" class="filter-tab {% if current_status == 'approved' %}active{% endif %}">Approved</a>
+                <a href="/validation/ui/list?status=rejected" class="filter-tab {% if current_status == 'rejected' %}active{% endif %}">Rejected</a>
+                <a href="/validation/ui/list?status=needs_review" class="filter-tab {% if current_status == 'needs_review' %}active{% endif %}">Needs Review</a>
+            </div>
+            
+            <div id="validation-container">
+                {% if validation_items %}
+                    <table class="validation-list">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Rule Title</th>
+                                <th>Type</th>
+                                <th>Confidence</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="validation-list">
+                            {% for item in validation_items %}
+                                <tr>
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.extracted_content.title }}</td>
+                                    <td>{{ item.extracted_content.rule_type }}</td>
+                                    <td>
+                                        {% set confidence = item.extracted_content.confidence|float if item.extracted_content.confidence else 0.5 %}
+                                        <div class="confidence-indicator">
+                                            {% if confidence >= 0.8 %}
+                                                <div class="confidence-dot high"></div>
+                                                High
+                                            {% elif confidence >= 0.5 %}
+                                                <div class="confidence-dot medium"></div>
+                                                Medium
+                                            {% else %}
+                                                <div class="confidence-dot low"></div>
+                                                Low
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill {{ item.validation_status.value }}">
+                                            {{ item.validation_status.value|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="/validation/ui/review/{{ item.id }}" class="action-btn review-btn">Review</a>
+                                            {% if item.validation_status.value == 'pending' %}
+                                                <button class="action-btn approve-btn" onclick="approveValidation({{ item.id }})">Approve</button>
+                                                <button class="action-btn reject-btn" onclick="rejectValidation({{ item.id }})">Reject</button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <h3>No validation items found</h3>
+                        <p>Process documents to extract rules that require validation</p>
+                        <a href="/documents/ui/list" class="btn-primary">Process Documents</a>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>ESD & Latch-up Guideline Generator | <span id="current-year"></span></p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Approve validation function
+        window.approveValidation = function(id) {
+            const username = prompt("Enter your name for validation attribution:", "");
+            const notes = prompt("Enter any comments or notes:", "");
+            
+            if (username !== null) {
+                fetch(`/validation/review/${id}/approve?validator=${encodeURIComponent(username)}&validator_notes=${encodeURIComponent(notes || '')}`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Approval failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(`Rule approved successfully: ${data.message}`);
+                    window.location.reload();
+                })
+                .catch(error => {
+                    alert(`Error: ${error.message}`);
+                });
+            }
+        };
+        
+        // Reject validation function
+        window.rejectValidation = function(id) {
+            const username = prompt("Enter your name for validation attribution:", "");
+            const notes = prompt("Please provide a reason for rejection:", "");
+            
+            if (username !== null && notes) {
+                fetch(`/validation/review/${id}/reject?validator=${encodeURIComponent(username)}&validator_notes=${encodeURIComponent(notes)}`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Rejection failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(`Rule rejected: ${data.message}`);
+                    window.location.reload();
+                })
+                .catch(error => {
+                    alert(`Error: ${error.message}`);
+                });
+            } else if (username !== null) {
+                alert("Please provide a reason for rejection.");
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<svg width="400" height="250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#f8f9fa"/>
+  <text x="200" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">ESD Diode Protection</text>
+  
+  <!-- I/O Pad -->
+  <rect x="50" y="100" width="60" height="40" fill="#ffcc99" stroke="black" stroke-width="2"/>
+  <text x="80" y="125" text-anchor="middle" font-family="Arial" font-size="12">I/O</text>
+  
+  <!-- Upper Diode to VDD -->
+  <polygon points="150,80 150,100 170,90" fill="black"/>
+  <line x1="110" y1="120" x2="150" y2="120" stroke="black" stroke-width="2"/>
+  <line x1="150" y1="120" x2="150" y2="90" stroke="black" stroke-width="2"/>
+  <line x1="170" y1="90" x2="170" y2="60" stroke="black" stroke-width="2"/>
+  
+  <!-- Lower Diode to VSS -->
+  <polygon points="170,140 150,130 150,150" fill="black"/>
+  <line x1="150" y1="120" x2="150" y2="140" stroke="black" stroke-width="2"/>
+  <line x1="170" y1="140" x2="170" y2="180" stroke="black" stroke-width="2"/>
+  
+  <!-- To Core -->
+  <line x1="150" y1="120" x2="250" y2="120" stroke="black" stroke-width="2"/>
+  <rect x="250" y="100" width="80" height="40" fill="#ccccff" stroke="black" stroke-width="2"/>
+  <text x="290" y="125" text-anchor="middle" font-family="Arial" font-size="12">Core</text>
+  
+  <!-- Power Rails -->
+  <line x1="30" y1="60" x2="350" y2="60" stroke="red" stroke-width="3"/>
+  <text x="360" y="65" font-family="Arial" font-size="12" fill="red">VDD</text>
+  
+  <line x1="30" y1="180" x2="350" y2="180" stroke="blue" stroke-width="3"/>
+  <text x="360" y="185" font-family="Arial" font-size="12" fill="blue">VSS</text>
+  
+  <!-- Current paths -->
+  <path d="M 80 105 L 80 90 L 165 90" stroke="green" stroke-width="2" fill="none" marker-end="url(#arrowgreen)"/>
+  <text x="120" y="85" font-family="Arial" font-size="10" fill="green">+ESD</text>
+  
+  <path d="M 80 135 L 80 150 L 165 150" stroke="purple" stroke-width="2" fill="none" marker-end="url(#arrowpurple)"/>
+  <text x="120" y="165" font-family="Arial" font-size="10" fill="purple">-ESD</text>
+  
+  <!-- Arrows -->
+  <defs>
+    <marker id="arrowgreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="green"/>
+    </marker>
+    <marker id="arrowpurple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="purple"/>
+    </marker>
+  </defs>
+</svg>

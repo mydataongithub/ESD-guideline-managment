@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-05-26T14:16:24.396258",
+  "summary": {
+    "total": 10,
+    "passed": 7,
+    "warnings": 1,
+    "failed": 2
+  },
+  "details": [
+    {
+      "test": "Python Version",
+      "status": "passed",
+      "message": "Python 3.13.3"
+    },
+    {
+      "test": "Required Packages",
+      "status": "failed",
+      "message": "Missing packages: python-docx, pillow"
+    },
+    {
+      "test": "Directory Structure",
+      "status": "passed",
+      "message": "All required directories present"
+    },
+    {
+      "test": "Database",
+      "status": "failed",
+      "message": "Missing tables: documents"
+    },
+    {
+      "test": "Templates",
+      "status": "passed",
+      "message": "All 12 templates present"
+    },
+    {
+      "test": "API Endpoints",
+      "status": "warning",
+      "message": "Missing endpoints: /docs/api/upload, /validation/api"
+    },
+    {
+      "test": "Import Functionality",
+      "status": "passed",
+      "message": "All document parsers functional"
+    },
+    {
+      "test": "Server Configuration",
+      "status": "passed",
+      "message": "Server configuration files present"
+    },
+    {
+      "test": "Sample Data",
+      "status": "passed",
+      "message": "Found 2 sample files"
+    },
+    {
+      "test": "Documentation",
+      "status": "passed",
+      "message": "All documentation files present"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-05-26T14:12:57.553431",
+  "summary": {
+    "total": 10,
+    "passed": 6,
+    "warnings": 1,
+    "failed": 3
+  },
+  "details": [
+    {
+      "test": "Python Version",
+      "status": "passed",
+      "message": "Python 3.13.3"
+    },
+    {
+      "test": "Required Packages",
+      "status": "failed",
+      "message": "Missing packages: pdfplumber, python-docx, pillow"
+    },
+    {
+      "test": "Directory Structure",
+      "status": "passed",
+      "message": "All required directories present"
+    },
+    {
+      "test": "Database",
+      "status": "failed",
+      "message": "Missing tables: documents"
+    },
+    {
+      "test": "Templates",
+      "status": "passed",
+      "message": "All 12 templates present"
+    },
+    {
+      "test": "API Endpoints",
+      "status": "failed",
+      "message": "Cannot load API: cannot import name 'create_rule_from_validation' from 'app.crud.rule' (C:\\Users\\weidner\\Desktop\\workflow3\\app\\crud\\rule.py)"
+    },
+    {
+      "test": "Import Functionality",
+      "status": "passed",
+      "message": "All document parsers functional"
+    },
+    {
+      "test": "Server Configuration",
+      "status": "passed",
+      "message": "Server configuration files present"
+    },
+    {
+      "test": "Sample Data",
+      "status": "warning",
+      "message": "No sample files found"
+    },
+    {
+      "test": "Documentation",
+      "status": "passed",
+      "message": "All documentation files present"
+    }
+  ]
+}

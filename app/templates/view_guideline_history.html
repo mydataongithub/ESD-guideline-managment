@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History for {{ technology_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="back-link">← Back to Home</a>
+            <a href="/view/{{ technology_name }}/latest" class="nav-link">View Latest</a>
+        </nav>
+        <h1>Version History for: {{ technology_name }}</h1>
+    </header>
+    
+    <main>
+        <section id="currentVersion">
+            <h2>Current Version</h2>
+            <div class="version-controls">
+                <button id="toggleCurrentPreview" class="btn-toggle">Show/Hide Current Content</button>
+            </div>
+            <div id="currentGuidelinePreview" style="display:none;">
+                {{ current_guideline_html | safe }}
+            </div>
+        </section>
+        
+        <hr/>
+        
+        <section id="versionHistory">
+            <h2>Past Versions</h2>
+            {% if versions %}
+            <div class="version-list">
+                {% for version in versions %}
+                <div class="version-item">
+                    <div class="version-header">
+                        <strong class="commit-sha">{{ version.sha[:7] }}</strong>
+                        <span class="commit-date">{{ version.date.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        <span class="commit-author">by {{ version.author if version.author else 'Unknown' }}</span>
+                    </div>
+                    <div class="commit-message">{{ version.message }}</div>
+                    <div class="version-actions">
+                        <a href="/view/{{ technology_name }}/version/{{ version.sha }}" class="btn-secondary" target="_blank">
+                            View this version
+                        </a>
+                        <button class="btn-secondary compare-btn" data-sha="{{ version.sha }}">
+                            Compare with current
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-versions">
+                <p>No version history found.</p>
+                <p>This could mean:</p>
+                <ul>
+                    <li>No guidelines have been generated for this technology yet</li>
+                    <li>The Git repository hasn't been initialized</li>
+                    <li>There was an error accessing the Git history</li>
+                </ul>
+                <a href="/" class="btn-primary">Go back and generate guidelines</a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+    
+    <footer>
+        <p>Version control powered by Git</p>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('toggleCurrentPreview');
+            const preview = document.getElementById('currentGuidelinePreview');
+            const compareButtons = document.querySelectorAll('.compare-btn');
+            
+            let isPreviewVisible = false;
+            
+            toggleBtn.addEventListener('click', function() {
+                isPreviewVisible = !isPreviewVisible;
+                preview.style.display = isPreviewVisible ? 'block' : 'none';
+                toggleBtn.textContent = isPreviewVisible ? 'Hide Current Content' : 'Show Current Content';
+            });
+            
+            compareButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const sha = this.dataset.sha;
+                    // For now, just open the specific version
+                    // In a more advanced implementation, you could show a diff view
+                    window.open(`/view/{{ technology_name }}/version/${sha}`, '_blank');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

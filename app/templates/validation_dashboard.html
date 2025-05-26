@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Dashboard - ESD & Latchup Guidelines</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/validation_styles.css">
+    <style>
+        .validation-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        .stats-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .status-badge {
+            font-size: 0.875rem;
+        }
+        .queue-item {
+            border-left: 4px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .queue-item.pending {
+            border-left-color: #ffc107;
+        }
+        .queue-item.approved {
+            border-left-color: #28a745;
+        }
+        .queue-item.rejected {
+            border-left-color: #dc3545;
+        }
+        .queue-item.needs-review {
+            border-left-color: #17a2b8;
+        }
+        .queue-item:hover {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="bi bi-shield-check"></i> ESD & Latchup Guidelines
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/rules">Rules</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/templates">Templates</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/docs/import">Import</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/validation">Validation</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="validation-header">
+        <div class="container">
+            <h1 class="display-4">Validation Queue</h1>
+            <p class="lead">Review and approve extracted rules</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-hourglass-split text-warning" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2" id="pendingCount">0</h3>
+                        <p class="text-muted mb-0">Pending Review</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2" id="approvedCount">0</h3>
+                        <p class="text-muted mb-0">Approved</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2" id="rejectedCount">0</h3>
+                        <p class="text-muted mb-0">Rejected</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-arrow-repeat text-info" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2" id="needsReviewCount">0</h3>
+                        <p class="text-muted mb-0">Needs Review</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label for="statusFilter" class="form-label">Status Filter</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="needs_review">Needs Review</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="documentFilter" class="form-label">Source Document</label>
+                        <select class="form-select" id="documentFilter">
+                            <option value="">All Documents</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary" onclick="applyFilters()">
+                            <i class="bi bi-funnel"></i> Apply Filters
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Queue -->
+        <div id="validationQueue">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Loading validation queue...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/validation.js"></script>
+    <script>
+        // Initialize validation dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadValidationStats();
+            loadValidationQueue();
+            loadDocumentFilter();
+        });
+
+        async function loadValidationStats() {
+            try {
+                const response = await fetch('/validation/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('pendingCount').textContent = stats.pending || 0;
+                    document.getElementById('approvedCount').textContent = stats.approved || 0;
+                    document.getElementById('rejectedCount').textContent = stats.rejected || 0;
+                    document.getElementById('needsReviewCount').textContent = stats.needs_review || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadValidationQueue() {
+            const status = document.getElementById('statusFilter').value;
+            const documentId = document.getElementById('documentFilter').value;
+            
+            let url = '/validation/queue';
+            const params = new URLSearchParams();
+            if (status) params.append('status', status);
+            if (documentId) params.append('document_id', documentId);
+            if (params.toString()) url += '?' + params.toString();
+
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    const items = await response.json();
+                    displayValidationItems(items);
+                }
+            } catch (error) {
+                console.error('Error loading queue:', error);
+                document.getElementById('validationQueue').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Error loading validation queue
+                    </div>
+                `;
+            }
+        }
+
+        function displayValidationItems(items) {
+            const container = document.getElementById('validationQueue');
+            
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">No items in validation queue</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="card queue-item ${item.validation_status} mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1">${item.extracted_content.title || 'Untitled Rule'}</h5>
+                                <p class="mb-2">${item.extracted_content.content || ''}</p>
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-${getStatusColor(item.validation_status)} status-badge">
+                                        ${formatStatus(item.validation_status)}
+                                    </span>
+                                    ${item.extracted_content.rule_type ? `
+                                        <span class="badge bg-secondary status-badge">
+                                            ${item.extracted_content.rule_type}
+                                        </span>
+                                    ` : ''}
+                                    ${item.extracted_content.confidence ? `
+                                        <span class="badge bg-info status-badge">
+                                            Confidence: ${Math.round(item.extracted_content.confidence * 100)}%
+                                        </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <a href="/validation/${item.id}/review" class="btn btn-primary">
+                                    <i class="bi bi-eye"></i> Review
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadDocumentFilter() {
+            try {
+                const response = await fetch('/documents/');
+                if (response.ok) {
+                    const documents = await response.json();
+                    const select = document.getElementById('documentFilter');
+                    
+                    documents.forEach(doc => {
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.textContent = doc.filename;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+            }
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'warning',
+                'approved': 'success',
+                'rejected': 'danger',
+                'needs_review': 'info'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function formatStatus(status) {
+            return status.replace('_', ' ').split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function applyFilters() {
+            loadValidationQueue();
+        }
+
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('documentFilter').value = '';
+            loadValidationQueue();
+        }
+    </script>
+</body>
+</html>

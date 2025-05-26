@@ -1,0 +1,44 @@
+<svg width="400" height="250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#f8f9fa"/>
+  <text x="200" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">CDM Protection - Corner Stitching</text>
+  
+  <!-- Metal Bus -->
+  <rect x="50" y="60" width="200" height="30" fill="#cccccc" stroke="black" stroke-width="2"/>
+  <text x="150" y="80" text-anchor="middle" font-family="Arial" font-size="14">VDD Bus</text>
+  
+  <rect x="250" y="60" width="30" height="130" fill="#cccccc" stroke="black" stroke-width="2"/>
+  
+  <!-- Corner without stitching (BAD) -->
+  <circle cx="250" cy="90" r="30" fill="none" stroke="red" stroke-width="3" stroke-dasharray="5,5"/>
+  <text x="290" y="95" font-family="Arial" font-size="12" fill="red">No Stitching</text>
+  <text x="290" y="110" font-family="Arial" font-size="10" fill="red">(CDM Risk)</text>
+  
+  <!-- Improved corner with stitching -->
+  <rect x="50" y="160" width="200" height="30" fill="#999999" stroke="black" stroke-width="2"/>
+  <text x="150" y="180" text-anchor="middle" font-family="Arial" font-size="14">VSS Bus</text>
+  
+  <rect x="250" y="160" width="30" height="30" fill="#999999" stroke="black" stroke-width="2"/>
+  <rect x="220" y="190" width="60" height="30" fill="#999999" stroke="black" stroke-width="2"/>
+  
+  <!-- Vias at corner -->
+  <circle cx="255" cy="185" r="2" fill="black"/>
+  <circle cx="265" cy="185" r="2" fill="black"/>
+  <circle cx="275" cy="185" r="2" fill="black"/>
+  <circle cx="255" cy="195" r="2" fill="black"/>
+  <circle cx="265" cy="195" r="2" fill="black"/>
+  <circle cx="275" cy="195" r="2" fill="black"/>
+  
+  <circle cx="250" cy="190" r="30" fill="none" stroke="green" stroke-width="3" stroke-dasharray="5,5"/>
+  <text x="290" y="195" font-family="Arial" font-size="12" fill="green">With Stitching</text>
+  <text x="290" y="210" font-family="Arial" font-size="10" fill="green">(CDM Safe)</text>
+  
+  <!-- Current flow arrows -->
+  <path d="M 100 75 L 200 75" stroke="blue" stroke-width="3" marker-end="url(#arrowblue)"/>
+  <text x="150" y="55" text-anchor="middle" font-family="Arial" font-size="10" fill="blue">CDM Current</text>
+  
+  <defs>
+    <marker id="arrowblue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="blue"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-05-26T14:17:06.201551",
+  "summary": {
+    "total": 10,
+    "passed": 9,
+    "warnings": 1,
+    "failed": 0
+  },
+  "details": [
+    {
+      "test": "Python Version",
+      "status": "passed",
+      "message": "Python 3.13.3"
+    },
+    {
+      "test": "Required Packages",
+      "status": "passed",
+      "message": "All 12 required packages installed"
+    },
+    {
+      "test": "Directory Structure",
+      "status": "passed",
+      "message": "All required directories present"
+    },
+    {
+      "test": "Database",
+      "status": "passed",
+      "message": "Database OK - 6 tables, 1 technologies, 1 rules"
+    },
+    {
+      "test": "Templates",
+      "status": "passed",
+      "message": "All 12 templates present"
+    },
+    {
+      "test": "API Endpoints",
+      "status": "warning",
+      "message": "Missing endpoints: /docs/api/upload, /validation/api"
+    },
+    {
+      "test": "Import Functionality",
+      "status": "passed",
+      "message": "All document parsers functional"
+    },
+    {
+      "test": "Server Configuration",
+      "status": "passed",
+      "message": "Server configuration files present"
+    },
+    {
+      "test": "Sample Data",
+      "status": "passed",
+      "message": "Found 2 sample files"
+    },
+    {
+      "test": "Documentation",
+      "status": "passed",
+      "message": "All documentation files present"
+    }
+  ]
+}

@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ESD & Latchup Guidelines</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            overflow-x: hidden;
+            font-size: 14px;
+        }
+        
+        /* Full height layout */
+        .wrapper {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Left sidebar */
+        .sidebar {
+            min-width: 280px;
+            max-width: 280px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            transition: all 0.3s;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .sidebar.collapsed {
+            min-width: 70px;
+            max-width: 70px;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: #1a252f;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+        
+        .sidebar-header .toggle-btn {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: 1px solid #34495e;
+            color: #ecf0f1;
+            padding: 5px;
+            margin-top: 10px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-header .toggle-btn:hover {
+            background: #34495e;
+        }
+        
+        /* Navigation */
+        .sidebar-nav {
+            padding: 0;
+            list-style: none;
+            margin: 0;
+        }
+        
+        .nav-section {
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .nav-section-title {
+            padding: 15px 20px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #95a5a6;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .sidebar.collapsed .nav-section-title {
+            text-align: center;
+            padding: 10px 5px;
+            font-size: 9px;
+        }
+        
+        .nav-item {
+            position: relative;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover {
+            background: #34495e;
+            color: #fff;
+            border-left-color: #3498db;
+        }
+        
+        .nav-link.active {
+            background: #34495e;
+            border-left-color: #e74c3c;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            padding: 12px 10px;
+            justify-content: center;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+            font-size: 20px;
+        }
+        
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+        
+        /* Submenu */
+        .nav-submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: #1a252f;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .nav-submenu.show {
+            max-height: 500px;
+        }
+        
+        .nav-submenu .nav-link {
+            padding-left: 50px;
+            font-size: 13px;
+        }
+        
+        .sidebar.collapsed .nav-submenu {
+            display: none;
+        }
+        
+        .nav-item.has-submenu .nav-link::after {
+            content: '\f078';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .nav-item.has-submenu.open .nav-link::after {
+            transform: rotate(180deg);
+        }
+        
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        /* Top bar */
+        .topbar {
+            background: white;
+            padding: 15px 30px;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .content-wrapper {
+            padding: 20px 30px;
+        }
+        
+        /* Dashboard Cards */
+        .stats-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e3e6f0;
+            transition: all 0.3s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stats-card .stats-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .stats-card .stats-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1;
+        }
+        
+        .stats-card .stats-label {
+            color: #6c757d;
+            font-size: 13px;
+            margin: 5px 0 0 0;
+        }
+        
+        /* Quick Actions */
+        .quick-action-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e3e6f0;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            height: 100%;
+        }
+        
+        .quick-action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        
+        .quick-action-card i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        
+        .quick-action-card h6 {
+            margin: 0;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        
+        /* Activity Feed */
+        .activity-feed {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e3e6f0;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-content p {
+            margin: 0;
+            font-size: 13px;
+        }
+        
+        .activity-time {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        
+        /* Technology selector */
+        .tech-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e3e6f0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                z-index: 999;
+                height: 100vh;
+                margin-left: -280px;
+            }
+            
+            .sidebar.active {
+                margin-left: 0;
+            }
+            
+            .overlay {
+                display: none;
+                position: fixed;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.7);
+                z-index: 998;
+                opacity: 0;
+                transition: all 0.5s ease-in-out;
+            }
+            
+            .overlay.active {
+                display: block;
+                opacity: 1;
+            }
+        }
+        
+        /* Custom scrollbar */
+        .sidebar::-webkit-scrollbar,
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a252f;
+        }
+        
+        .main-content::-webkit-scrollbar-track {
+            background: #f1f3f4;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb,
+        .main-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="bi bi-shield-check"></i> ESD & Latchup</h3>
+                <button class="toggle-btn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <!-- Dashboard -->
+                <li class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <li class="nav-item">
+                        <a href="/dashboard" class="nav-link active">
+                            <i class="bi bi-speedometer2"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                </li>
+                
+                <!-- Guidelines -->
+                <li class="nav-section">
+                    <div class="nav-section-title">Guidelines</div>
+                    <li class="nav-item has-submenu">
+                        <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'guidelines-submenu')">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <span class="nav-text">Generate</span>
+                        </a>
+                        <ul class="nav-submenu" id="guidelines-submenu">
+                            <li><a href="#" class="nav-link" onclick="showGenerateOptions()">
+                                <span class="nav-text">New Guideline</span>
+                            </a></li>
+                            <li><a href="#" class="nav-link" onclick="showRecentGuidelines()">
+                                <span class="nav-text">Recent</span>
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAllGuidelines()">
+                            <i class="bi bi-journal-text"></i>
+                            <span class="nav-text">View All</span>
+                        </a>
+                    </li>
+                </li>
+                
+                <!-- Management -->
+                <li class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <li class="nav-item">
+                        <a href="/rules" class="nav-link">
+                            <i class="bi bi-list-check"></i>
+                            <span class="nav-text">Rules</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/templates" class="nav-link">
+                            <i class="bi bi-file-code"></i>
+                            <span class="nav-text">Templates</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/technologies/manage" class="nav-link">
+                            <i class="bi bi-cpu"></i>
+                            <span class="nav-text">Technologies</span>
+                        </a>
+                    </li>
+                </li>
+                
+                <!-- Import/Export -->
+                <li class="nav-section">
+                    <div class="nav-section-title">Data</div>
+                    <li class="nav-item">
+                        <a href="/docs/import" class="nav-link">
+                            <i class="bi bi-upload"></i>
+                            <span class="nav-text">Import</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/validation" class="nav-link">
+                            <i class="bi bi-check-circle"></i>
+                            <span class="nav-text">Validation</span>
+                            <span class="badge bg-danger ms-auto" id="validationBadge">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="exportData()">
+                            <i class="bi bi-download"></i>
+                            <span class="nav-text">Export</span>
+                        </a>
+                    </li>
+                </li>
+                
+                <!-- System -->
+                <li class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <li class="nav-item">
+                        <a href="/status" class="nav-link">
+                            <i class="bi bi-info-circle"></i>
+                            <span class="nav-text">Status</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/docs" class="nav-link">
+                            <i class="bi bi-book"></i>
+                            <span class="nav-text">API Docs</span>
+                        </a>
+                    </li>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Dashboard</h4>
+                    <div class="d-flex align-items-center">
+                        <select class="form-select form-select-sm me-3" id="globalTechSelect" style="width: 200px;">
+                            <option value="">All Technologies</option>
+                        </select>
+                        <button class="btn btn-sm btn-primary" onclick="refreshDashboard()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="content-wrapper">
+                <!-- Stats Row -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-list-check"></i>
+                            </div>
+                            <p class="stats-value" id="totalRules">0</p>
+                            <p class="stats-label">Total Rules</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-danger bg-opacity-10 text-danger">
+                                <i class="bi bi-lightning"></i>
+                            </div>
+                            <p class="stats-value" id="esdRules">0</p>
+                            <p class="stats-label">ESD Rules</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-warning bg-opacity-10 text-warning">
+                                <i class="bi bi-cpu"></i>
+                            </div>
+                            <p class="stats-value" id="latchupRules">0</p>
+                            <p class="stats-label">Latchup Rules</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <div class="stats-icon bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                            <p class="stats-value" id="pendingValidation">0</p>
+                            <p class="stats-label">Pending Validation</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions & Recent Activity -->
+                <div class="row">
+                    <!-- Quick Actions -->
+                    <div class="col-lg-8 mb-4">
+                        <h5 class="mb-3">Quick Actions</h5>
+                        <div class="row g-3">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="quick-action-card" onclick="showGenerateOptions()">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                    <h6>Generate Guidelines</h6>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="quick-action-card" onclick="window.location.href='/rules/create'">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <h6>Add Rule</h6>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="quick-action-card" onclick="window.location.href='/docs/import'">
+                                    <i class="bi bi-upload"></i>
+                                    <h6>Import Document</h6>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="quick-action-card" onclick="window.location.href='/validation'">
+                                    <i class="bi bi-check-circle"></i>
+                                    <h6>Review Queue</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="col-lg-4 mb-4">
+                        <h5 class="mb-3">Recent Activity</h5>
+                        <div class="activity-feed">
+                            <div id="recentActivity">
+                                <p class="text-muted text-center">Loading activity...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Technology Overview -->
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="mb-3">Technology Overview</h5>
+                        <div class="tech-selector">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Technology</th>
+                                            <th>Node Size</th>
+                                            <th>Foundry</th>
+                                            <th>Total Rules</th>
+                                            <th>Last Updated</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="techOverview">
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">Loading technologies...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Generate Options -->
+    <div class="modal fade" id="generateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Generate Guidelines</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="modalTechSelect" class="form-label">Select Technology</label>
+                    <select class="form-select" id="modalTechSelect">
+                        <option value="">Choose a technology...</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="generateForSelectedTech()">Generate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            loadTechnologies();
+            loadRecentActivity();
+            loadTechnologyOverview();
+        });
+        
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+        
+        // Toggle submenu
+        function toggleSubmenu(event, submenuId) {
+            event.preventDefault();
+            const submenu = document.getElementById(submenuId);
+            const parentItem = submenu.closest('.nav-item');
+            
+            submenu.classList.toggle('show');
+            parentItem.classList.toggle('open');
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load rule statistics
+                const statsResponse = await fetch('/api/rules/stats/summary');
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('totalRules').textContent = stats.total || 0;
+                    document.getElementById('esdRules').textContent = stats.esd || 0;
+                    document.getElementById('latchupRules').textContent = stats.latchup || 0;
+                }
+                
+                // Load validation queue count
+                const validationResponse = await fetch('/validation/count/pending');
+                if (validationResponse.ok) {
+                    const data = await validationResponse.json();
+                    const count = data.count || 0;
+                    document.getElementById('pendingValidation').textContent = count;
+                    document.getElementById('validationBadge').textContent = count;
+                    if (count > 0) {
+                        document.getElementById('validationBadge').classList.remove('bg-secondary');
+                        document.getElementById('validationBadge').classList.add('bg-danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Load technologies
+        async function loadTechnologies() {
+            try {
+                const response = await fetch('/technologies');
+                if (response.ok) {
+                    const technologies = await response.json();
+                    const selects = ['globalTechSelect', 'modalTechSelect'];
+                    
+                    selects.forEach(selectId => {
+                        const select = document.getElementById(selectId);
+                        if (select) {
+                            // Keep the first option
+                            const firstOption = select.options[0];
+                            select.innerHTML = '';
+                            select.appendChild(firstOption);
+                            
+                            technologies.forEach(tech => {
+                                const option = document.createElement('option');
+                                option.value = tech;
+                                option.textContent = tech.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                select.appendChild(option);
+                            });
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading technologies:', error);
+            }
+        }
+        
+        // Load recent activity
+        async function loadRecentActivity() {
+            // Simulated recent activity
+            const activities = [
+                { icon: 'bi-plus-circle', color: 'bg-success', text: '5 new rules added', time: '2 hours ago' },
+                { icon: 'bi-check-circle', color: 'bg-primary', text: '3 rules approved', time: '5 hours ago' },
+                { icon: 'bi-file-earmark-text', color: 'bg-info', text: 'Template updated', time: '1 day ago' },
+                { icon: 'bi-upload', color: 'bg-warning', text: 'Document imported', time: '2 days ago' }
+            ];
+            
+            const activityHtml = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon ${activity.color} bg-opacity-10">
+                        <i class="bi ${activity.icon} text-${activity.color.replace('bg-', '')}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>${activity.text}</p>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('recentActivity').innerHTML = activityHtml;
+        }
+        
+        // Load technology overview
+        async function loadTechnologyOverview() {
+            try {
+                const response = await fetch('/technologies/stats');
+                if (response.ok) {
+                    const technologies = await response.json();
+                    const tbody = document.getElementById('techOverview');
+                    
+                    if (technologies.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No technologies found</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = technologies.map(tech => `
+                        <tr>
+                            <td><strong>${tech.name}</strong></td>
+                            <td>${tech.node_size || '-'}</td>
+                            <td>${tech.foundry || '-'}</td>
+                            <td>
+                                <span class="badge bg-primary">${tech.total_rules || 0}</span>
+                                <small class="text-muted ms-1">
+                                    (${tech.esd_rules || 0} ESD, ${tech.latchup_rules || 0} LU)
+                                </small>
+                            </td>
+                            <td>${tech.updated_at ? new Date(tech.updated_at).toLocaleDateString() : 'Never'}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="generateGuidelines('${tech.name}')">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info" onclick="viewGuidelines('${tech.name}')">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="editTechnology(${tech.id})">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading technology overview:', error);
+            }
+        }
+        
+        // Show generate options modal
+        function showGenerateOptions() {
+            const modal = new bootstrap.Modal(document.getElementById('generateModal'));
+            modal.show();
+        }
+        
+        // Generate for selected technology
+        function generateForSelectedTech() {
+            const tech = document.getElementById('modalTechSelect').value;
+            if (!tech) {
+                alert('Please select a technology');
+                return;
+            }
+            generateGuidelines(tech);
+            bootstrap.Modal.getInstance(document.getElementById('generateModal')).hide();
+        }
+        
+        // Generate guidelines
+        function generateGuidelines(technology) {
+            if (!technology) {
+                technology = document.getElementById('globalTechSelect').value;
+                if (!technology) {
+                    showGenerateOptions();
+                    return;
+                }
+            }
+            window.location.href = `/generate/${technology}`;
+        }
+        
+        // View guidelines
+        function viewGuidelines(technology) {
+            window.open(`/view/${technology}/latest`, '_blank');
+        }
+        
+        // Edit technology
+        function editTechnology(techId) {
+            window.location.href = `/technologies/edit/${techId}`;
+        }
+        
+        // Export data
+        function exportData() {
+            if (confirm('Export all rules to Excel?')) {
+                window.location.href = '/api/rules/export';
+            }
+        }
+        
+        // Refresh dashboard
+        function refreshDashboard() {
+            loadDashboardData();
+            loadTechnologyOverview();
+            loadRecentActivity();
+        }
+        
+        // Show all guidelines
+        function showAllGuidelines() {
+            const tech = document.getElementById('globalTechSelect').value;
+            if (tech) {
+                window.location.href = `/view/${tech}/history`;
+            } else {
+                alert('Please select a technology first');
+            }
+        }
+        
+        // Show recent guidelines
+        function showRecentGuidelines() {
+            // This would show recently generated guidelines
+            alert('Recent guidelines feature coming soon!');
+        }
+    </script>
+</body>
+</html>

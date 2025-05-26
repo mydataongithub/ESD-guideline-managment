@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ESD & Latch-up Guidelines</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/document_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/mcp_styles.css') }}">
+    <style>
+        .document-list {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .document-list th, .document-list td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .document-list th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .document-list tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>ESD & Latch-up Guideline Generator</h1>
+            <p>AI-Enhanced Document Processing with MCP Server</p>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/documents/ui/upload">Upload Documents</a></li>
+                    <li><a href="/documents/ui/list">Document Management</a></li>
+                    <li><a href="/documents/ui/mcp" class="active">MCP Processing</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        <section>
+            <h2>Document Processing with MCP</h2>
+            <p>Process documents using AI-enhanced analysis to extract rules, texts, and images more accurately.</p>
+
+            <div class="mcp-status" id="mcp-status">
+                <div class="mcp-status-indicator"></div>
+                <span id="mcp-status-message">Checking MCP server status...</span>
+            </div>
+            
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="type-filter">Type:</label>
+                    <select id="type-filter" class="filter-select">
+                        <option value="">All</option>
+                        <option value="excel">Excel</option>
+                        <option value="pdf">PDF</option>
+                        <option value="word">Word</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="status-filter">Status:</label>
+                    <select id="status-filter" class="filter-select">
+                        <option value="">All</option>
+                        <option value="true">Processed</option>
+                        <option value="false">Pending</option>
+                    </select>
+                </div>
+                
+                <button id="refresh-btn" class="refresh-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            
+            <div id="document-container">
+                {% if documents %}
+                    <table class="document-list">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Filename</th>
+                                <th>Type</th>
+                                <th>Upload Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="document-list">
+                            {% for doc in documents %}
+                                <tr data-id="{{ doc.id }}" data-type="{{ doc.document_type.value }}" data-processed="{{ doc.processed }}">
+                                    <td>{{ doc.id }}</td>
+                                    <td>{{ doc.filename }}</td>
+                                    <td>{{ doc.document_type.value }}</td>
+                                    <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if doc.processed %}
+                                            <span class="status-badge status-success">Processed</span>
+                                        {% else %}
+                                            {% if doc.processing_status == "failed" %}
+                                                <span class="status-badge status-failed">Failed</span>
+                                            {% elif doc.processing_status == "processing" %}
+                                                <span class="status-badge status-pending">Processing</span>
+                                            {% else %}
+                                                <span class="status-badge status-pending">Pending</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            {% if not doc.processed %}
+                                                <button class="action-btn process-ai-btn" onclick="processMcpDocument({{ doc.id }})">Process with AI</button>
+                                            {% endif %}
+                                            <button class="action-btn view-btn" onclick="viewDocumentDetails({{ doc.id }})">View</button>
+                                            <button class="action-btn delete-btn" onclick="deleteDocument({{ doc.id }})">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                        </svg>
+                        <h3>No Documents Found</h3>
+                        <p>Upload documents to get started</p>
+                        <a href="/documents/ui/upload" class="btn-primary">Upload Documents</a>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>ESD & Latch-up Guideline Generator | <span id="current-year"></span></p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // DOM elements
+        const typeFilter = document.getElementById('type-filter');
+        const statusFilter = document.getElementById('status-filter');
+        const documentList = document.getElementById('document-list');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const mcpStatus = document.getElementById('mcp-status');
+        const mcpStatusMessage = document.getElementById('mcp-status-message');
+        
+        // Check MCP server status
+        async function checkMcpStatus() {
+            try {
+                const response = await fetch('/documents/mcp-status');
+                const data = await response.json();
+                
+                if (data.status === 'connected') {
+                    mcpStatus.className = 'mcp-status mcp-status-connected';
+                    mcpStatusMessage.textContent = 'MCP Server is connected and ready for AI document processing';
+                } else {
+                    mcpStatus.className = 'mcp-status mcp-status-disconnected';
+                    mcpStatusMessage.textContent = 'MCP Server is not available. Document processing will use standard parsers.';
+                }
+            } catch (error) {
+                mcpStatus.className = 'mcp-status mcp-status-disconnected';
+                mcpStatusMessage.textContent = 'Error connecting to MCP Server: ' + error.message;
+            }
+        }
+        
+        // Run immediately
+        checkMcpStatus();
+        
+        // Apply filters to document list
+        function applyFilters() {
+            const typeValue = typeFilter.value;
+            const statusValue = statusFilter.value;
+            
+            // Get all rows
+            const rows = documentList.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const rowType = row.dataset.type;
+                const rowProcessed = row.dataset.processed;
+                
+                let showRow = true;
+                
+                // Apply type filter
+                if (typeValue && rowType !== typeValue) {
+                    showRow = false;
+                }
+                
+                // Apply status filter
+                if (statusValue !== "" && rowProcessed !== statusValue) {
+                    showRow = false;
+                }
+                
+                // Show or hide row
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+        
+        // Add event listeners
+        typeFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+        
+        // Refresh button
+        refreshBtn.addEventListener('click', function() {
+            window.location.reload();
+        });
+        
+        // Process document with MCP function
+        window.processMcpDocument = function(id) {
+            fetch(`/documents/${id}/process-with-mcp`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('MCP processing failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(`Document sent for MCP processing: ${data.message}`);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(`Error: ${error.message}`);
+            });
+        };
+        
+        // Delete document function
+        window.deleteDocument = function(id) {
+            if (confirm('Are you sure you want to delete this document?')) {
+                fetch(`/documents/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Delete failed');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    window.location.reload();
+                })
+                .catch(error => {
+                    alert(`Error: ${error.message}`);
+                });
+            }
+        };
+        
+        // View document details
+        window.viewDocumentDetails = function(id) {
+            // For now, just alert - future implementation will show validation queue
+            alert(`Document details for ID ${id} - Validation interface coming soon`);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+{
+    "process_type": "0.18μm HV-BiCMOS",
+    "esd_levels": {
+        "hbm": "4kV",
+        "cdm": "1kV",
+        "mm": "400V"
+    },
+    "latch_up_rules": {
+        "rule1": "All high-voltage I/O cells must implement deep trench isolation.",
+        "nwell_psub_spacing_io": "15μm",
+        "guard_ring_width": "8.0μm",
+        "substrate_contact_spacing": "25μm maximum",
+        "layout_guidelines": [
+            "Use deep trench isolation for HV/LV domain separation",
+            "Implement multiple guard ring structures around HV circuits",
+            "Maintain large spacing between HV and LV devices",
+            "Use dedicated HV substrate biasing network"
+        ]
+    },
+    "approved_clamps": [
+        {
+            "name": "Clamp_HV_Primary",
+            "type": "High-Voltage Primary",
+            "rating": "8kV HBM",
+            "application": "HV I/O (>5V)",
+            "notes": "Multi-stage clamp for high-voltage interfaces"
+        },
+        {
+            "name": "Clamp_LV_Standard",
+            "type": "Low-Voltage Primary",
+            "rating": "4kV HBM",
+            "application": "Standard I/O (3.3V/5V)",
+            "notes": "Standard protection for low-voltage I/O"
+        },
+        {
+            "name": "Clamp_BiCMOS_Driver",
+            "type": "BiCMOS Optimized",
+            "rating": "6kV HBM",
+            "application": "BiCMOS Output Drivers",
+            "notes": "Optimized for high-current BiCMOS drivers"
+        },
+        {
+            "name": "Clamp_Power_HV",
+            "type": "Power Clamp",
+            "rating": "10kV HBM",
+            "application": "HV Power Rails",
+            "notes": "High-voltage power clamp for 12V-50V rails"
+        },
+        {
+            "name": "Clamp_Cross_Domain",
+            "type": "Domain Crossing",
+            "rating": "5kV HBM",
+            "application": "HV-LV Interface",
+            "notes": "Protection for signals crossing voltage domains"
+        }
+    ],
+    "advanced_protection_scheme": true,
+    "advanced_protection_scheme_details": "Multi-domain protection architecture with voltage-dependent trigger circuits, deep trench isolation, and domain-specific clamp networks.",
+    "design_rules": {
+        "metal_routing": [
+            {
+                "name": "HV_ESD_Metal_Width",
+                "value": "20μm minimum",
+                "description": "Minimum metal width for HV ESD current paths"
+            },
+            {
+                "name": "LV_ESD_Metal_Width",
+                "value": "12μm minimum",
+                "description": "Minimum metal width for LV ESD current paths"
+            },
+            {
+                "name": "ESD_Via_Array_HV",
+                "value": "8x redundancy",
+                "description": "Via array sizing for HV ESD paths"
+            },
+            {
+                "name": "Domain_Crossing_Width",
+                "value": "25μm minimum",
+                "description": "Metal width for domain-crossing ESD paths"
+            }
+        ],
+        "device_placement": [
+            {
+                "name": "HV_LV_Separation",
+                "value": "50μm minimum",
+                "description": "Minimum separation between HV and LV ESD devices"
+            },
+            {
+                "name": "Deep_Trench_Requirement",
+                "value": "Mandatory for HV",
+                "description": "Deep trench isolation required for all HV circuits"
+            },
+            {
+                "name": "BiCMOS_NPN_Spacing",
+                "value": "30μm minimum",
+                "description": "Spacing around high-current NPN devices"
+            }
+        ],
+        "isolation_requirements": [
+            {
+                "name": "HV_Domain_Isolation",
+                "value": ">1MΩ @ 50V",
+                "description": "Isolation resistance between HV domains"
+            },
+            {
+                "name": "Trench_Depth",
+                "value": "8μm minimum",
+                "description": "Deep trench isolation depth"
+            }
+        ]
+    },
+    "electrical_constraints": {
+        "max_resistance": "20Ω (LV), 50Ω (HV)",
+        "min_trigger_voltage": "VDD + 1.0V (HV), VDD + 0.5V (LV)",
+        "max_clamp_voltage": "1.5 × VDD (all domains)",
+        "max_leakage": "1μA @ 150°C (HV), 100nA @ 150°C (LV)",
+        "isolation_resistance": ">1MΩ between domains"
+    },
+    "simulation_requirements": [
+        {
+            "type": "Multi-Domain TLP",
+            "description": "TLP characterization across all voltage domains",
+            "tools": ["HSPICE", "Spectre", "Multi-domain TLP"],
+            "criteria": "Domain isolation maintained during ESD stress"
+        },
+        {
+            "type": "High-Voltage ESD",
+            "description": "HV ESD simulation up to breakdown limits",
+            "tools": ["Sentaurus TCAD", "HSPICE HV models"],
+            "criteria": "No secondary breakdown below 2× operating voltage"
+        },
+        {
+            "type": "Thermal Analysis",
+            "description": "Self-heating analysis for high-power ESD events",
+            "tools": ["ANSYS Icepak", "Comsol"],
+            "criteria": "Peak temperature < 500°C during 100ns pulse"
+        },
+        {
+            "type": "Latch-up Robustness",
+            "description": "Advanced latch-up simulation with substrate modeling",
+            "tools": ["Cadence Substrate Storm", "Silvaco Atlas"],
+            "criteria": "No latch-up trigger up to 1.5× rated ESD level"
+        }
+    ],
+    "process_variations": [
+        {
+            "parameter": "HV Device Matching",
+            "description": "High-voltage device parameter variations",
+            "impact": "±30% variation in HV ESD device performance",
+            "mitigation": "Statistical design with extensive corner analysis"
+        },
+        {
+            "parameter": "Deep Trench Quality",
+            "description": "Deep trench isolation effectiveness",
+            "impact": "Domain isolation may vary by 2x",
+            "mitigation": "Conservative isolation design with test structures"
+        },
+        {
+            "parameter": "BiCMOS NPN Beta",
+            "description": "NPN current gain variations affect ESD behavior",
+            "impact": "±50% variation in bipolar ESD device performance",
+            "mitigation": "Design independent of beta variations where possible"
+        }
+    ],
+    "special_requirements": [
+        {
+            "category": "Automotive Qualification",
+            "description": "AEC-Q100 Grade 0 qualification required (-40°C to +150°C)"
+        },
+        {
+            "category": "High-Voltage Interfaces",
+            "description": "12V, 24V, and 48V automotive interface protection"
+        },
+        {
+            "category": "Power Management",
+            "description": "DC-DC converter and LDO ESD protection"
+        },
+        {
+            "category": "Motor Control",
+            "description": "High-current motor driver ESD protection"
+        },
+        {
+            "category": "Isolation Barriers",
+            "description": "Galvanic isolation interface protection"
+        }
+    ],
+    "clamp_requirements": [
+        "All HV clamps must be qualified for automotive temperature range",
+        "ESD protection must not compromise isolation barriers",
+        "High-current capability verification through pulse testing",
+        "Long-term reliability testing at elevated temperatures",
+        "EMC compatibility verification for automotive applications"
+    ],
+    "internal_references": [
+        {
+            "title": "HV-BiCMOS ESD Design Manual",
+            "description": "Comprehensive guide for high-voltage ESD protection design"
+        },
+        {
+            "title": "Automotive ESD Requirements",
+            "description": "AEC-Q100 and ISO 26262 compliance guidelines"
+        },
+        {
+            "title": "Deep Trench Isolation Guidelines",
+            "description": "Layout and verification procedures for DTI structures"
+        },
+        {
+            "title": "Multi-Domain ESD Verification",
+            "description": "Simulation and test procedures for multi-voltage systems"
+        }
+    ],
+    "document_status": "Active - Rev 1.8 (Automotive Qualified)"
+}

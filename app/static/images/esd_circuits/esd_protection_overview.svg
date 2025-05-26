@@ -1,0 +1,36 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f8f9fa"/>
+  <text x="200" y="25" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold">ESD Protection Overview</text>
+  
+  <!-- I/O Pad -->
+  <rect x="30" y="120" width="60" height="60" fill="#ffcc99" stroke="black" stroke-width="2"/>
+  <text x="60" y="155" text-anchor="middle" font-family="Arial" font-size="12">I/O Pad</text>
+  
+  <!-- Protection Diodes -->
+  <polygon points="120,110 120,130 140,120" fill="black"/>
+  <line x1="140" y1="120" x2="140" y2="80" stroke="black" stroke-width="2"/>
+  <text x="150" y="85" font-family="Arial" font-size="10">to VDD</text>
+  
+  <polygon points="140,170 120,160 120,180" fill="black"/>
+  <line x1="140" y1="170" x2="140" y2="210" stroke="black" stroke-width="2"/>
+  <text x="150" y="205" font-family="Arial" font-size="10">to VSS</text>
+  
+  <!-- Signal path -->
+  <line x1="90" y1="150" x2="250" y2="150" stroke="black" stroke-width="2"/>
+  <text x="170" y="145" text-anchor="middle" font-family="Arial" font-size="10">To Core</text>
+  
+  <!-- Core Circuit -->
+  <rect x="250" y="120" width="80" height="60" fill="#ccccff" stroke="black" stroke-width="2"/>
+  <text x="290" y="155" text-anchor="middle" font-family="Arial" font-size="12">Core Circuit</text>
+  
+  <!-- Power Rails -->
+  <line x1="20" y1="80" x2="350" y2="80" stroke="red" stroke-width="3"/>
+  <text x="360" y="85" font-family="Arial" font-size="12" fill="red">VDD</text>
+  
+  <line x1="20" y1="210" x2="350" y2="210" stroke="blue" stroke-width="3"/>
+  <text x="360" y="215" font-family="Arial" font-size="12" fill="blue">VSS</text>
+  
+  <!-- ESD Event -->
+  <path d="M 60 100 L 50 90 L 70 90 L 60 80" stroke="orange" stroke-width="3" fill="none"/>
+  <text x="75" y="95" font-family="Arial" font-size="10" fill="orange">ESD</text>
+</svg>

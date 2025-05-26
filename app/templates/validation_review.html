@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ESD & Latch-up Guidelines</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/validation_styles.css') }}">
+    <script src="{{ url_for('static', path='/js/validation.js') }}" defer></script>
+    <style>
+        .validation-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .rule-title {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .rule-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .rule-metadata {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #666;
+            gap: 5px;
+        }
+
+        .rule-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            border-left: 3px solid #007bff;
+            padding-left: 15px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .confidence-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .confidence-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .confidence-high {
+            background-color: #28a745;
+        }
+
+        .confidence-medium {
+            background-color: #ffc107;
+        }
+
+        .confidence-low {
+            background-color: #dc3545;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-reject {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-review {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .rule-images {
+            margin-top: 20px;
+        }
+
+        .rule-image {
+            max-width: 100%;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .image-caption {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .validation-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-rejected {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .status-needs-review {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .notes-section {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .validation-notes {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 100px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>ESD & Latch-up Guideline Generator</h1>
+            <p>Rule Validation Review</p>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/documents/ui/upload">Upload Documents</a></li>
+                    <li><a href="/documents/ui/list">Document Management</a></li>
+                    <li><a href="/validation/ui/list" class="active">Validation Queue</a></li>
+                    <li><a href="/validation/ui/dashboard">Validation Dashboard</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        <section>
+            <a href="/validation/ui/list" class="back-link">← Back to Validation Queue</a>
+            
+            <div class="validation-card">
+                {% set content = validation.extracted_content %}
+                
+                <div class="validation-status status-{{ validation.validation_status.value }}">
+                    Status: {{ validation.validation_status.value|title }}
+                </div>
+                
+                <h2 class="rule-title">{{ content.title }}</h2>
+                
+                <div class="rule-info">
+                    <div class="rule-metadata">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Rule Type: {{ content.rule_type|title }}
+                    </div>
+                    
+                    <div class="rule-metadata">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                        </svg>
+                        Severity: {{ content.severity|title if content.severity else "Medium" }}
+                    </div>
+                    
+                    <div class="rule-metadata">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Created: {{ validation.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                    
+                    {% if validation.document %}
+                    <div class="rule-metadata">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        Source: {{ validation.document.filename }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% set confidence = content.confidence|float if content.confidence else 0.5 %}
+                <div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Confidence Level: {{ "%.0f"|format(confidence * 100) }}%</span>
+                        <span>{{ "High" if confidence >= 0.8 else "Medium" if confidence >= 0.5 else "Low" }}</span>
+                    </div>
+                    <div class="confidence-bar-container">
+                        <div class="confidence-bar {{ 'confidence-high' if confidence >= 0.8 else 'confidence-medium' if confidence >= 0.5 else 'confidence-low' }}" style="width: {{ confidence * 100 }}%;"></div>
+                    </div>
+                </div>
+                
+                <div class="rule-content">
+                    {{ content.content|safe }}
+                </div>
+                
+                {% if content.images and content.images|length > 0 %}
+                <div class="rule-images">
+                    <h3>Related Images</h3>
+                    {% for image in content.images %}
+                        <img src="data:{{ image.mime_type }};base64,{{ image.data }}" class="rule-image" alt="Rule image">
+                        {% if image.caption %}
+                            <div class="image-caption">{{ image.caption }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="notes-section">
+                    <h3>Validation Notes</h3>
+                    {% if validation.validation_status.value != 'pending' %}
+                        {% if validation.validator_notes %}
+                            <p>{{ validation.validator_notes }}</p>
+                        {% else %}
+                            <p><i>No notes provided.</i></p>
+                        {% endif %}
+                        
+                        {% if validation.validated_by %}
+                            <p>Validated by: {{ validation.validated_by }}</p>
+                        {% endif %}
+                    {% else %}
+                        <textarea id="validator-notes" class="validation-notes" placeholder="Enter your notes or comments about this rule"></textarea>
+                    {% endif %}
+                </div>
+                
+                {% if validation.validation_status.value == 'pending' %}
+                <div class="action-buttons">
+                    <button class="btn btn-approve" onclick="approveRule()">Approve Rule</button>
+                    <button class="btn btn-reject" onclick="rejectRule()">Reject Rule</button>
+                    <button class="btn btn-review" onclick="needsReview()">Needs Further Review</button>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>ESD & Latch-up Guideline Generator | <span id="current-year"></span></p>
+        </div>
+    </footer>    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Approve rule function
+        function approveRule() {
+            const username = prompt("Enter your name for validation attribution:", "");
+            const notes = document.getElementById('validator-notes').value;
+            
+            if (username !== null) {
+                approveValidation({{ validation.id }});
+            }
+        };
+        
+        // Reject rule function
+        function rejectRule() {
+            const username = prompt("Enter your name for validation attribution:", "");
+            const notes = document.getElementById('validator-notes').value;
+            
+            if (username !== null) {
+                if (!notes) {
+                    if (window.notifications) {
+                        window.notifications.warning("Please provide notes explaining why this rule is being rejected.");
+                    } else {
+                        alert("Please provide notes explaining why this rule is being rejected.");
+                    }
+                    return;
+                }
+                
+                rejectValidation({{ validation.id }});
+            }
+        };
+        
+        // Needs review function
+        function needsReview() {
+            const username = prompt("Enter your name for validation attribution:", "");
+            const notes = document.getElementById('validator-notes').value;
+            
+            if (username !== null) {
+                needsReview({{ validation.id }});
+            }
+        };
+    </script>
+</body>
+</html>
