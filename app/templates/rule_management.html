@@ -186,7 +186,7 @@
                     <div>
                         <span class="text-muted">
                             Showing {{ (pagination.current_page - 1) * 20 + 1 }} - 
-                            {{ [pagination.current_page * 20, pagination.total_count]|min }} 
+                            {{ pagination.current_page * 20 if pagination.current_page * 20 < pagination.total_count else pagination.total_count }} 
                             of {{ pagination.total_count }} rules
                         </span>
                     </div>

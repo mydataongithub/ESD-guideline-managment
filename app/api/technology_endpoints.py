@@ -49,7 +49,11 @@ async def create_technology(
             detail=f"Technology '{technology.name}' already exists"
         )
     
-    return TechnologyCRUD.create(db, obj_in=technology)
+    # Create technology in the database
+    db_tech = TechnologyCRUD.create(db, obj_in=technology)
+    
+    # Convert to Pydantic model before returning
+    return Technology.model_validate(db_tech)
 
 @router.get("/{technology_id}", response_model=Technology)
 async def get_technology(
@@ -60,7 +64,7 @@ async def get_technology(
     technology = TechnologyCRUD.get(db, id=technology_id)
     if not technology:
         raise HTTPException(status_code=404, detail="Technology not found")
-    return technology
+    return Technology.model_validate(technology)
 
 @router.put("/{technology_id}", response_model=Technology)
 async def update_technology(
@@ -82,7 +86,11 @@ async def update_technology(
                 detail=f"Technology '{technology_update.name}' already exists"
             )
     
-    return TechnologyCRUD.update(db, db_obj=technology, obj_in=technology_update)
+    # Update technology in database
+    updated_tech = TechnologyCRUD.update(db, db_obj=technology, obj_in=technology_update)
+    
+    # Convert to Pydantic model before returning
+    return Technology.model_validate(updated_tech)
 
 @router.delete("/{technology_id}")
 async def delete_technology(

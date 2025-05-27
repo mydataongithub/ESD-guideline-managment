@@ -59,7 +59,8 @@ async def get_templates_by_technology(
     db: Session = Depends(get_db)
 ):
     """Get all templates for a specific technology."""
-    return TemplateCRUD.get_by_technology(db, technology_id=technology_id)
+    templates = TemplateCRUD.get_by_technology(db, technology_id=technology_id)
+    return [schemas.Template.model_validate(template) for template in templates]
 
 @router.get("/{template_id}", response_model=schemas.Template)
 async def get_template(
@@ -70,7 +71,7 @@ async def get_template(
     template = TemplateCRUD.get(db, id=template_id)
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
-    return template
+    return schemas.Template.model_validate(template)
 
 @router.post("/", response_model=schemas.Template)
 async def create_template(
@@ -91,7 +92,9 @@ async def create_template(
         variables = extract_variables_from_template(template.template_content)
         template.template_variables = {var: f"Default value for {var}" for var in variables}
     
-    return TemplateCRUD.create(db, obj_in=template)
+    # Create the template and convert to Pydantic model
+    db_template = TemplateCRUD.create(db, obj_in=template)
+    return schemas.Template.model_validate(db_template)
 
 @router.put("/{template_id}", response_model=schemas.Template)
 async def update_template(
@@ -118,7 +121,9 @@ async def update_template(
     if hasattr(template, 'last_used_at'):
         template.last_used_at = datetime.utcnow()
     
-    return TemplateCRUD.update(db, db_obj=template, obj_in=template_update)
+    # Update the template and convert to Pydantic model
+    updated_template = TemplateCRUD.update(db, db_obj=template, obj_in=template_update)
+    return schemas.Template.model_validate(updated_template)
 
 @router.delete("/{template_id}")
 async def delete_template(

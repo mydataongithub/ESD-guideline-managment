@@ -24,6 +24,8 @@ class CRUDTechnology(CRUDBase[Technology, TechnologyCreate, TechnologyUpdate]):
                 "id": tech.id,
                 "name": tech.name,
                 "description": tech.description,
+                "node_size": getattr(tech, 'node_size', None),
+                "foundry": getattr(tech, 'foundry', None),
                 "total_rules": esd_count + latchup_count + general_count,
                 "esd_rules": esd_count,
                 "latchup_rules": latchup_count,

@@ -127,7 +127,18 @@ def process_document(document_id: int, db: Session = Depends(get_db)):
     # Process based on document type
     try:
         # Save file to temporary location for processing
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        # Get proper file extension for the temporary file
+        file_extension = os.path.splitext(db_document.filename)[1].lower()
+        if not file_extension:
+            # Default to .xlsx for Excel files
+            if db_document.document_type == DocumentType.EXCEL:
+                file_extension = '.xlsx'
+            elif db_document.document_type == DocumentType.PDF:
+                file_extension = '.pdf'
+            elif db_document.document_type == DocumentType.WORD:
+                file_extension = '.docx'
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
             temp_file.write(db_document.file_data)
             temp_path = temp_file.name
         

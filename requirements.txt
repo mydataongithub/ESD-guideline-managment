@@ -49,3 +49,5 @@ pytest-asyncio
 
 # Static file serving (included with FastAPI)
 # aiofiles==23.2.1  # Uncomment if you need async file operations
+
+beautifulsoup4==4.12.3

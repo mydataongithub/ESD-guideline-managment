@@ -153,7 +153,7 @@ async def edit_rule_form(
     })
 
 # API endpoints for JSON responses
-@api_router.get("/", response_model=List[schemas.Rule])
+@api_router.get("/")
 async def get_rules(
     db: Session = Depends(get_db),
     technology_id: Optional[int] = Query(None),
@@ -164,7 +164,7 @@ async def get_rules(
 ):
     """Get rules with optional filtering."""
     if search:
-        return RuleCRUD.search(
+        rules = RuleCRUD.search(
             db,
             query=search,
             technology_id=technology_id,
@@ -181,7 +181,27 @@ async def get_rules(
         if rule_type:
             query = query.filter(Rule.rule_type == rule_type)
         
-        return query.order_by(Rule.order_index).offset(skip).limit(limit).all()
+        rules = query.order_by(Rule.order_index).offset(skip).limit(limit).all()
+    
+    # Convert to simple dict format to avoid Pydantic serialization issues
+    rules_data = []
+    for rule in rules:
+        rules_data.append({
+            "id": rule.id,
+            "technology_id": rule.technology_id,
+            "rule_type": rule.rule_type.value,
+            "title": rule.title,
+            "content": rule.content,
+            "explanation": rule.explanation,
+            "severity": rule.severity,
+            "category": rule.category,
+            "order_index": rule.order_index,
+            "is_active": rule.is_active,
+            "created_at": rule.created_at.isoformat() if rule.created_at else None,
+            "updated_at": rule.updated_at.isoformat() if rule.updated_at else None
+        })
+    
+    return {"rules": rules_data, "count": len(rules_data)}
 
 @api_router.post("/", response_model=schemas.Rule)
 async def create_rule(
@@ -202,7 +222,11 @@ async def create_rule(
     rule_model = RuleCreateModel(**data_dict)
     rule_model.order_index = max_order + 1
     
-    return RuleCRUD.create(db, obj_in=rule_model)
+    # Create the rule in the database
+    db_rule = RuleCRUD.create(db, obj_in=rule_model)
+    
+    # Convert to Pydantic model before returning
+    return schemas.Rule.model_validate(db_rule)
 
 @api_router.put("/{rule_id}", response_model=schemas.Rule)
 async def update_rule(
@@ -215,7 +239,11 @@ async def update_rule(
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     
-    return RuleCRUD.update(db, db_obj=rule, obj_in=rule_update)
+    # Update the rule in the database
+    updated_rule = RuleCRUD.update(db, db_obj=rule, obj_in=rule_update)
+    
+    # Convert to Pydantic model before returning
+    return schemas.Rule.model_validate(updated_rule)
 
 @api_router.delete("/{rule_id}")
 async def delete_rule(

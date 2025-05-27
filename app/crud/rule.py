@@ -1,12 +1,51 @@
 # app/crud/rule.py
 from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_, or_, func
 from app.crud.base import CRUDBase
 from app.database.models import Rule, RuleImage, RuleType as DBRuleType
 from app.models.schemas import RuleCreate, RuleUpdate, RuleType
 
 class CRUDRule(CRUDBase[Rule, RuleCreate, RuleUpdate]):
+    def get_with_images(self, db: Session, rule_id: int) -> Optional[Rule]:
+        """Fetch a single rule with all associated images"""
+        return db.query(Rule).options(
+            selectinload(Rule.images)
+        ).filter(Rule.id == rule_id).first()
+    
+    def get_all_rules_for_technology(self, db: Session, technology_id: int) -> List[Rule]:
+        """Fetch all rules for a technology with their images"""
+        return db.query(Rule).options(
+            selectinload(Rule.images)
+        ).filter(
+            Rule.technology_id == technology_id,
+            Rule.is_active == True
+        ).order_by(Rule.order_index).all()
+    
+    def create_rule_with_image(self, db: Session, rule_data: dict, image_data: dict) -> Rule:
+        """Create a rule with an associated image"""
+        # Create rule
+        rule = Rule(**rule_data)
+        db.add(rule)
+        db.flush()  # Get rule.id
+        
+        # Create associated image
+        if image_data:
+            image = RuleImage(
+                rule_id=rule.id,
+                filename=image_data['filename'],
+                image_data=image_data.get('image_data'),
+                mime_type=image_data.get('mime_type', 'image/png'),
+                description=image_data.get('description'),
+                caption=image_data.get('caption')
+            )
+            db.add(image)
+        
+        db.commit()
+        
+        # Return with images loaded
+        return self.get_with_images(db, rule.id)
+    
     def get_by_technology(
         self, 
         db: Session, 
@@ -159,7 +198,7 @@ class CRUDRule(CRUDBase[Rule, RuleCreate, RuleUpdate]):
                 rule_image = RuleImage(
                     rule_id=db_rule.id,
                     image_data=img_data.get("image_data"),
-                    image_type=img_data.get("mime_type", "image/png"),
+                    mime_type=img_data.get("mime_type", "image/png"),
                     caption=img_data.get("description", "")
                 )
                 db.add(rule_image)

@@ -1,5 +1,5 @@
 # app/api/endpoints.py
-from fastapi import APIRouter, HTTPException, Request, Path as FastAPIPath, Depends
+from fastapi import APIRouter, HTTPException, Request, Path as FastAPIPath, Depends, Response
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from pathlib import Path as PythonPath
@@ -8,7 +8,12 @@ from sqlalchemy.orm import Session
 
 from app.core import generator, git_utils, db_generator
 from app.database.database import get_db
+from app.database.models import RuleImage
 from app.models import schemas
+
+from bs4 import BeautifulSoup
+import base64
+import re
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -35,6 +40,7 @@ async def generate_guideline_page(request: Request, technology_name: str):
 @router.post("/generate/{technology_name}", response_model=schemas.GuidelineResponse)
 async def generate_and_commit_guideline(
     technology_name: str = FastAPIPath(..., description="The name of the technology"),
+    template_id: int = None,
     db: Session = Depends(get_db)
 ):
     """Generates, saves, and commits guidelines for a specific technology."""
@@ -202,3 +208,280 @@ async def get_system_status(db: Session = Depends(get_db)):
             "system": "error",
             "error": str(e)
         }
+
+@router.get("/guidelines/{technology_id}/preview", response_class=HTMLResponse)
+async def preview_guideline(technology_id: int, db: Session = Depends(get_db)):
+    """Preview generated guideline with images"""
+    try:
+        html_content = db_generator.render_guideline_document(db, technology_id)
+        return HTMLResponse(content=html_content)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
+
+@router.get("/preview/{technology_name}", response_class=HTMLResponse)
+async def preview_guideline_by_name(
+    technology_name: str, 
+    template_id: int = None,
+    db: Session = Depends(get_db)
+):
+    """Preview generated guideline with images by technology name"""
+    try:
+        # Get technology by name (case-insensitive)
+        from app.crud.technology import TechnologyCRUD
+        from app.database.models import Technology
+        
+        # Try exact match first
+        technology = TechnologyCRUD.get_by_name(db, name=technology_name)
+        
+        # If not found, try case-insensitive search
+        if not technology:
+            technology = db.query(Technology).filter(
+                Technology.name.ilike(technology_name)
+            ).first()
+        
+        if not technology:
+            # List available technologies for helpful error message
+            available = db.query(Technology.name).filter(Technology.active == True).all()
+            available_names = [t.name for t in available]
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Technology '{technology_name}' not found. Available technologies: {', '.join(available_names)}"
+            )
+        
+        # Check if template_id is provided, otherwise use default
+        template_path = "guideline.html"
+        html_content = db_generator.render_guideline_document(
+            db, 
+            technology.id, 
+            template_path,
+            custom_template_id=template_id
+        )
+        return HTMLResponse(content=html_content)
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
+
+@router.get("/images/{image_id}")
+async def get_rule_image(image_id: int, db: Session = Depends(get_db)):
+    """Serve image from database"""
+    image = db.query(RuleImage).filter(RuleImage.id == image_id).first()
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return Response(
+        content=image.image_data,
+        media_type=image.mime_type or "image/png",
+        headers={
+            "Content-Disposition": f"inline; filename={image.filename}"
+        }
+    )
+
+
+@router.post("/save-preview/{technology_name}")
+async def save_preview_as_guideline(
+    technology_name: str,
+    template_id: int = None,
+    db: Session = Depends(get_db)
+):
+    """Save the preview content exactly as shown with all images embedded"""
+    import base64
+    import re
+    from bs4 import BeautifulSoup
+    
+    try:
+        # Get technology
+        from app.crud.technology import TechnologyCRUD
+        from app.database.models import Technology
+        
+        technology = db.query(Technology).filter(
+            Technology.name.ilike(technology_name)
+        ).first()
+        
+        if not technology:
+            raise HTTPException(status_code=404, detail=f"Technology '{technology_name}' not found")
+        
+        # Generate the preview HTML with images (exactly as shown)
+        html_content = db_generator.render_guideline_document(
+            db, 
+            technology.id, 
+            "guideline.html",
+            custom_template_id=template_id
+        )
+        
+        # Add save button CSS and JS to the HTML content
+        save_button_html = """
+<style>
+    .save-preview-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 1000;
+    }
+    .save-preview-btn:hover { background: #218838; }
+</style>
+"""
+        
+        # Insert the save button CSS before </head>
+        html_content = html_content.replace('</head>', save_button_html + '</head>')
+        
+        # Save directory
+        tech_dir = GUIDELINES_REPO_PATH / technology_name
+        tech_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save HTML version with embedded images
+        html_file_path = tech_dir / "esd_latchup_guidelines.html"
+        with open(html_file_path, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        # Parse HTML to create markdown version
+        soup = BeautifulSoup(html_content, 'html.parser')
+        markdown_lines = []
+        
+        # Extract title
+        title = soup.find('h1')
+        if title:
+            markdown_lines.append(f"# {title.get_text().strip()}")
+            markdown_lines.append("")
+        
+        # Extract metadata from header
+        header = soup.find('header')
+        if header:
+            for p in header.find_all('p', class_='metadata'):
+                markdown_lines.append(p.get_text().strip())
+            markdown_lines.append("")
+        
+        # Process all rule sections
+        for section in soup.find_all('section', class_='rule-section'):
+            # Rule title
+            rule_title = section.find('h3', class_='rule-title')
+            if rule_title:
+                markdown_lines.append(f"### {rule_title.get_text().strip()}")
+                markdown_lines.append("")
+            
+            # Rule content
+            rule_content = section.find('div', class_='rule-content')
+            if rule_content:
+                markdown_lines.append(rule_content.get_text().strip())
+                markdown_lines.append("")
+            
+            # Rule metadata
+            rule_metadata = section.find('div', class_='rule-metadata')
+            if rule_metadata:
+                for p in rule_metadata.find_all('p'):
+                    markdown_lines.append(p.get_text().strip())
+                markdown_lines.append("")
+            
+            # Images - save them as separate files
+            images_container = section.find('div', class_='images-container')
+            if images_container:
+                markdown_lines.append("**Visual References:**")
+                for idx, img in enumerate(images_container.find_all('img')):
+                    src = img.get('src', '')
+                    alt = img.get('alt', 'Image')
+                    
+                    if src.startswith('data:'):
+                        # Extract and save base64 image
+                        match = re.match(r'data:([^;]+);base64,(.+)', src)
+                        if match:
+                            mime_type, image_data = match.groups()
+                            # Handle special cases for MIME types
+                            if mime_type == 'image/svg+xml':
+                                ext = 'svg'
+                            elif mime_type == 'image/jpeg':
+                                ext = 'jpg'
+                            else:
+                                ext = mime_type.split('/')[-1]
+                            img_filename = f"rule_{section.get('id', idx)}_{idx}.{ext}"
+                            img_path = tech_dir / img_filename
+                            
+                            # Decode and save image
+                            img_bytes = base64.b64decode(image_data)
+                            with open(img_path, 'wb') as f:
+                                f.write(img_bytes)
+                            
+                            markdown_lines.append(f"![{alt}]({img_filename})")
+                            
+                            # Add caption if present
+                            figcaption = img.find_parent('figure')
+                            if figcaption:
+                                caption = figcaption.find('figcaption')
+                                if caption:
+                                    markdown_lines.append(f"*{caption.get_text().strip()}*")
+                    else:
+                        # External image URL
+                        markdown_lines.append(f"![{alt}]({src})")
+                
+                markdown_lines.append("")
+        
+        # Add footer
+        markdown_lines.extend([
+            "",
+            "---",
+            "",
+            "*This document is auto-generated from the ESD & Latchup Guidelines system.*",
+            "*For questions or updates, contact the Design Team.*"
+        ])
+        
+        # Save markdown version
+        markdown_content = "\n".join(markdown_lines)
+        md_file_path = tech_dir / "esd_latchup_guidelines.md"
+        with open(md_file_path, 'w', encoding='utf-8') as f:
+            f.write(markdown_content)
+        
+        # Commit to Git
+        commit_success = git_utils.commit_guideline(md_file_path, technology_name)
+        
+        return {
+            "success": True,
+            "message": f"Preview saved successfully as guideline for {technology_name}",
+            "html_path": str(html_file_path.relative_to(GUIDELINES_REPO_PATH)),
+            "markdown_path": str(md_file_path.relative_to(GUIDELINES_REPO_PATH)),
+            "committed": commit_success,
+            "images_extracted": len(list(tech_dir.glob("*.png")) + list(tech_dir.glob("*.svg"))),
+            "download_html": True
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving preview: {str(e)}")
+
+@router.get("/select-template/{technology_name}", response_class=HTMLResponse)
+async def select_template_page(
+    request: Request,
+    technology_name: str,
+    db: Session = Depends(get_db)
+):
+    """Show template selection page for a technology"""
+    from app.database.models import Technology, Template
+    
+    # Get technology (case-insensitive)
+    technology = db.query(Technology).filter(
+        Technology.name.ilike(technology_name)
+    ).first()
+    
+    if not technology:
+        raise HTTPException(status_code=404, detail=f"Technology '{technology_name}' not found")
+    
+    # Get all templates for this technology
+    template_list = db.query(Template).filter(
+        Template.technology_id == technology.id
+    ).order_by(Template.is_default.desc(), Template.name).all()
+    
+    return templates.TemplateResponse("select_template.html", {
+        "request": request,
+        "technology_name": technology.name,
+        "technology_id": technology.id,
+        "templates": template_list
+    })

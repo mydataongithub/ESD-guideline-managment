@@ -2,15 +2,128 @@
 """Database-driven guideline generator"""
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
-from sqlalchemy.orm import Session
-from jinja2 import Template
+from typing import Dict, Any, Optional, List
+from sqlalchemy.orm import Session, selectinload
+from jinja2 import Template, Environment, FileSystemLoader
+import os
+import base64
 
-from app.database.models import Technology, Rule, RuleType, Template as DBTemplate
+from app.database.models import Technology, Rule, RuleType, Template as DBTemplate, RuleImage
 from app.crud.technology import TechnologyCRUD
 from app.crud.rule import RuleCRUD
 
 GUIDELINES_REPO_PATH = Path(__file__).parent.parent.parent / "guidelines_repo"
+
+def generate_guideline_from_database(db: Session, guideline_id: int) -> Dict[str, Any]:
+    """Generate guideline document data with all associated rules and images"""
+    
+    # For now, we'll use technology_id as guideline_id since we don't have a separate Guideline model
+    # Fetch technology with eager loading of rules and images
+    technology = db.query(Technology).options(
+        selectinload(Technology.rules).selectinload(Rule.images)
+    ).filter(Technology.id == guideline_id).first()
+    
+    if not technology:
+        raise ValueError(f"Technology with ID {guideline_id} not found")
+    
+    # Prepare document data structure
+    document_data = {
+        "title": f"{technology.name.replace('_', ' ').title()} ESD & Latchup Design Guidelines",
+        "description": technology.description or "Comprehensive ESD and Latchup design guidelines",
+        "version": technology.version or "1.0",
+        "technology_name": technology.name.replace('_', ' ').title(),
+        "generated_date": datetime.now().strftime("%Y-%m-%d"),
+        "current_date": datetime.now().strftime("%Y-%m-%d"),
+        "foundry": technology.foundry or "N/A",
+        "node_size": technology.node_size or "N/A",
+        "process_type": technology.process_type or "N/A",
+        "rules": []
+    }
+    
+    # Process each rule with its images
+    for rule in technology.rules:
+        if not rule.is_active:
+            continue
+            
+        rule_data = {
+            "id": rule.id,
+            "title": rule.title,
+            "content": rule.content,
+            "order": rule.order_index,
+            "type": rule.rule_type.value,
+            "severity": rule.severity,
+            "category": rule.category,
+            "explanation": rule.explanation,
+            "implementation_notes": rule.implementation_notes,
+            "references": rule.references,
+            "images": []
+        }
+        
+        # Process associated images
+        for image in rule.images:
+            # Convert binary image data to base64 for embedding
+            image_base64 = base64.b64encode(image.image_data).decode('utf-8')
+            image_data = {
+                "id": image.id,
+                "filename": image.filename,
+                "url": f"data:{image.mime_type or 'image/png'};base64,{image_base64}",
+                "description": image.description or image.caption or f"Image for {rule.title}",
+                "alt_text": f"{rule.title} - {image.description or image.caption or 'Illustration'}",
+                "mime_type": image.mime_type or "image/png"
+            }
+            rule_data["images"].append(image_data)
+        
+        document_data["rules"].append(rule_data)
+    
+    # Sort rules by type and order
+    document_data["rules"].sort(key=lambda x: (x["type"], x["order"]))
+    
+    return document_data
+
+def render_guideline_document(db: Session, guideline_id: int, template_path: str = "guideline.html", custom_template_id: int = None):
+    """Render guideline document using Jinja2 template"""
+    
+    # Get document data with images
+    doc_data = generate_guideline_from_database(db, guideline_id)
+    
+    # Setup Jinja2
+    template_dir = Path(__file__).parent.parent / "templates"
+    env = Environment(loader=FileSystemLoader(str(template_dir)))
+    
+    # Check if custom template is requested
+    if custom_template_id:
+        from app.database.models import Template as DBTemplate
+        custom_template = db.query(DBTemplate).filter(
+            DBTemplate.id == custom_template_id
+        ).first()
+        
+        if custom_template and custom_template.template_content:
+            # Render using custom template content
+            template = Environment().from_string(custom_template.template_content)
+        else:
+            # Fall back to default template
+            if not (template_dir / template_path).exists():
+                template_path = "view_guideline.html"
+            template = env.get_template(template_path)
+    else:
+        # Check if guideline.html exists, if not use view_guideline.html
+        if not (template_dir / template_path).exists():
+            template_path = "view_guideline.html"
+        template = env.get_template(template_path)
+    
+    # Group rules by type for better organization
+    esd_rules = [r for r in doc_data["rules"] if r["type"] == "esd"]
+    latchup_rules = [r for r in doc_data["rules"] if r["type"] == "latchup"]
+    general_rules = [r for r in doc_data["rules"] if r["type"] == "general"]
+    
+    doc_data["esd_rules"] = esd_rules
+    doc_data["latchup_rules"] = latchup_rules
+    doc_data["general_rules"] = general_rules
+    
+    # Render template with data
+    rendered_html = template.render(**doc_data)
+    
+    return rendered_html
 
 def generate_guideline_from_db(technology_name: str, db: Session) -> str:
     """Generate guideline markdown content from database rules."""
@@ -20,8 +133,10 @@ def generate_guideline_from_db(technology_name: str, db: Session) -> str:
     if not technology:
         raise ValueError(f"Technology '{technology_name}' not found in database.")
     
-    # Get all active rules for this technology
-    rules = db.query(Rule).filter(
+    # Get all active rules for this technology with eager loading of images
+    rules = db.query(Rule).options(
+        selectinload(Rule.images)
+    ).filter(
         Rule.technology_id == technology.id,
         Rule.is_active == True
     ).order_by(Rule.rule_type, Rule.order_index).all()
@@ -196,7 +311,7 @@ def format_latchup_strategy(latchup_strategy: Optional[Dict[str, Any]]) -> str:
     return "\n\n".join(lines) if lines else "No latchup strategy defined."
 
 def format_rules_section(rules: list) -> str:
-    """Format a section of rules."""
+    """Format a section of rules with image support."""
     if not rules:
         return "No rules defined for this category."
     
@@ -229,6 +344,16 @@ def format_rules_section(rules: list) -> str:
         
         if rule.references:
             content.append(f"**References**: {rule.references}\n")
+        
+        # Add images if available
+        if hasattr(rule, 'images') and rule.images:
+            content.append("\n**Visual References:**\n")
+            for idx, image in enumerate(rule.images):
+                # Since we're generating markdown, we can't embed binary data directly
+                # We'll reference the image by its ID for later processing
+                content.append(f"![{image.caption or image.description or f'Figure {idx+1}'}](image://{image.id})\n")
+                if image.description:
+                    content.append(f"*{image.description}*\n")
         
         content.append("")  # Empty line between rules
     

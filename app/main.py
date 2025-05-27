@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.api import endpoints, document_endpoints, validation_endpoints, template_endpoints, rule_endpoints, technology_endpoints
-from app.api.fixed_rule_endpoints import fixed_api_router
+from app.api.simple_rule_api import simple_router
 
 app = FastAPI(title="ESD & Latch-up Guideline Generator")
 
@@ -22,7 +22,7 @@ app.include_router(template_endpoints.router)
 app.include_router(template_endpoints.api_router)
 app.include_router(rule_endpoints.router)
 app.include_router(rule_endpoints.api_router)
-app.include_router(fixed_api_router)  # Include our fixed rule endpoints
+app.include_router(simple_router)  # Include our simplified rule API
 app.include_router(technology_endpoints.router)
 
 @app.get("/", include_in_schema=False)

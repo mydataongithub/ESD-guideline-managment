@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ESD Guidelines</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .metadata {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .rule-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .rule-title {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .rule-content {
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        
+        .rule-metadata {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        
+        .rule-metadata p {
+            margin: 5px 0;
+        }
+        
+        .images-container {
+            margin-top: 25px;
+        }
+        
+        figure {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .rule-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            cursor: zoom-in;
+        }
+        
+        figcaption {
+            margin-top: 12px;
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .severity-high {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .severity-medium {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .severity-low {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .rule-type-header {
+            margin: 40px 0 20px 0;
+            padding: 20px;
+            background: #343a40;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 10px;
+            }
+            
+            .rule-section {
+                page-break-inside: avoid;
+            }
+            
+            figure {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ title }}</h1>
+        {% if description %}
+        <p class="description">{{ description }}</p>
+        {% endif %}
+        <p class="metadata">
+            Version: {{ version }} | 
+            Generated: {{ current_date }} |
+            Technology: {{ technology_name }}
+        </p>
+        {% if foundry or node_size %}
+        <p class="metadata">
+            {% if foundry %}Foundry: {{ foundry }}{% endif %}
+            {% if foundry and node_size %} | {% endif %}
+            {% if node_size %}Node Size: {{ node_size }}{% endif %}
+            {% if process_type %} | Process: {{ process_type }}{% endif %}
+        </p>
+        {% endif %}
+    </header>
+
+    <!-- Save Preview Button -->
+    <button id="savePreviewBtn" class="save-preview-btn">Save as Guideline</button>
+    <div id="saveStatus" class="save-status"></div>
+    
+    <style>
+        .save-preview-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .save-preview-btn:hover {
+            background: #218838;
+        }
+        
+        .save-preview-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .save-status {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .save-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .save-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media print {
+            .save-preview-btn,
+            .save-status {
+                display: none !important;
+            }
+        }
+    </style>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const saveBtn = document.getElementById('savePreviewBtn');
+        const statusDiv = document.getElementById('saveStatus');
+        
+        saveBtn.addEventListener('click', async function() {
+            // Get technology name from URL
+            const pathParts = window.location.pathname.split('/');
+            let technologyName = '';
+            
+            // Handle different URL patterns
+            if (pathParts.includes('preview')) {
+                const previewIndex = pathParts.indexOf('preview');
+                technologyName = pathParts[previewIndex + 1];
+            } else if (pathParts.includes('guidelines')) {
+                // Extract from title
+                const title = document.querySelector('h1').textContent;
+                const match = title.match(/(.+?)\s+ESD/i);
+                if (match) {
+                    technologyName = match[1].toLowerCase().replace(/\s+/g, '_');
+                }
+            }
+            
+            if (!technologyName) {
+                showStatus('Error: Could not determine technology name', 'error');
+                return;
+            }
+            
+            // Get template_id from URL if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const templateId = urlParams.get('template_id');
+            
+            // Disable button and show loading
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            
+            try {
+                let url = `/save-preview/${technologyName}`;
+                if (templateId) {
+                    url += `?template_id=${templateId}`;
+                }
+                
+                const response = await fetch(url, { method: 'POST' });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to save preview');
+                }
+                
+                const result = await response.json();
+                
+                // Show success
+                showStatus(`Saved successfully!\nHTML: ${result.html_path}\nMarkdown: ${result.markdown_path}\nImages extracted: ${result.images_extracted || 0}`, 'success');
+                saveBtn.textContent = 'Saved!';
+                
+                // Download HTML if indicated
+                if (result.download_html) {
+                    // Create a blob of the current page
+                    const htmlContent = document.documentElement.outerHTML;
+                    const blob = new Blob([htmlContent], { type: 'text/html' });
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = `${technologyName}_guidelines.html`;
+                    link.click();
+                    URL.revokeObjectURL(downloadUrl);
+                }
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    saveBtn.textContent = 'Save as Guideline';
+                    saveBtn.disabled = false;
+                }, 3000);
+                
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
+                saveBtn.textContent = 'Save as Guideline';
+                saveBtn.disabled = false;
+            }
+        });
+        
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `save-status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+    });
+    </script>
+
+
+    <main>
+        {% if esd_rules %}
+        <section>
+            <div class="rule-type-header">
+                <h2>ESD Design Rules</h2>
+            </div>
+            {% for rule in esd_rules %}
+            <section class="rule-section" id="rule-{{ rule.id }}">
+                <h3 class="rule-title">{{ loop.index }}. {{ rule.title }}</h3>
+                <div class="rule-content">{{ rule.content }}</div>
+                
+                {% if rule.explanation or rule.implementation_notes or rule.severity or rule.references %}
+                <div class="rule-metadata">
+                    {% if rule.explanation %}
+                    <p><strong>Explanation:</strong> {{ rule.explanation }}</p>
+                    {% endif %}
+                    {% if rule.implementation_notes %}
+                    <p><strong>Implementation Notes:</strong> {{ rule.implementation_notes }}</p>
+                    {% endif %}
+                    {% if rule.severity %}
+                    <p><strong>Severity:</strong> <span class="severity-{{ rule.severity }}">{{ rule.severity|upper }}</span></p>
+                    {% endif %}
+                    {% if rule.references %}
+                    <p><strong>References:</strong> {{ rule.references }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if rule.images %}
+                <div class="images-container">
+                    <h4>Visual References</h4>
+                    {% if rule.images|length == 1 %}
+                        <!-- Single image -->
+                        <figure>
+                            <img src="{{ rule.images[0].url }}" 
+                                 alt="{{ rule.images[0].alt_text }}" 
+                                 class="rule-image"
+                                 onclick="window.open(this.src, '_blank')">
+                            <figcaption>{{ rule.images[0].description }}</figcaption>
+                        </figure>
+                    {% else %}
+                        <!-- Multiple images in grid -->
+                        <div class="image-grid">
+                            {% for image in rule.images %}
+                            <figure>
+                                <img src="{{ image.url }}" 
+                                     alt="{{ image.alt_text }}" 
+                                     class="rule-image"
+                                     onclick="window.open(this.src, '_blank')">
+                                <figcaption>{{ image.description }}</figcaption>
+                            </figure>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {% if latchup_rules %}
+        <section>
+            <div class="rule-type-header">
+                <h2>Latchup Prevention Rules</h2>
+            </div>
+            {% for rule in latchup_rules %}
+            <section class="rule-section" id="rule-{{ rule.id }}">
+                <h3 class="rule-title">{{ loop.index }}. {{ rule.title }}</h3>
+                <div class="rule-content">{{ rule.content }}</div>
+                
+                {% if rule.explanation or rule.implementation_notes or rule.severity or rule.references %}
+                <div class="rule-metadata">
+                    {% if rule.explanation %}
+                    <p><strong>Explanation:</strong> {{ rule.explanation }}</p>
+                    {% endif %}
+                    {% if rule.implementation_notes %}
+                    <p><strong>Implementation Notes:</strong> {{ rule.implementation_notes }}</p>
+                    {% endif %}
+                    {% if rule.severity %}
+                    <p><strong>Severity:</strong> <span class="severity-{{ rule.severity }}">{{ rule.severity|upper }}</span></p>
+                    {% endif %}
+                    {% if rule.references %}
+                    <p><strong>References:</strong> {{ rule.references }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if rule.images %}
+                <div class="images-container">
+                    <h4>Visual References</h4>
+                    {% if rule.images|length == 1 %}
+                        <!-- Single image -->
+                        <figure>
+                            <img src="{{ rule.images[0].url }}" 
+                                 alt="{{ rule.images[0].alt_text }}" 
+                                 class="rule-image"
+                                 onclick="window.open(this.src, '_blank')">
+                            <figcaption>{{ rule.images[0].description }}</figcaption>
+                        </figure>
+                    {% else %}
+                        <!-- Multiple images in grid -->
+                        <div class="image-grid">
+                            {% for image in rule.images %}
+                            <figure>
+                                <img src="{{ image.url }}" 
+                                     alt="{{ image.alt_text }}" 
+                                     class="rule-image"
+                                     onclick="window.open(this.src, '_blank')">
+                                <figcaption>{{ image.description }}</figcaption>
+                            </figure>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {% if general_rules %}
+        <section>
+            <div class="rule-type-header">
+                <h2>General Design Rules</h2>
+            </div>
+            {% for rule in general_rules %}
+            <section class="rule-section" id="rule-{{ rule.id }}">
+                <h3 class="rule-title">{{ loop.index }}. {{ rule.title }}</h3>
+                <div class="rule-content">{{ rule.content }}</div>
+                
+                {% if rule.explanation or rule.implementation_notes or rule.severity or rule.references %}
+                <div class="rule-metadata">
+                    {% if rule.explanation %}
+                    <p><strong>Explanation:</strong> {{ rule.explanation }}</p>
+                    {% endif %}
+                    {% if rule.implementation_notes %}
+                    <p><strong>Implementation Notes:</strong> {{ rule.implementation_notes }}</p>
+                    {% endif %}
+                    {% if rule.severity %}
+                    <p><strong>Severity:</strong> <span class="severity-{{ rule.severity }}">{{ rule.severity|upper }}</span></p>
+                    {% endif %}
+                    {% if rule.references %}
+                    <p><strong>References:</strong> {{ rule.references }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if rule.images %}
+                <div class="images-container">
+                    <h4>Visual References</h4>
+                    {% if rule.images|length == 1 %}
+                        <!-- Single image -->
+                        <figure>
+                            <img src="{{ rule.images[0].url }}" 
+                                 alt="{{ rule.images[0].alt_text }}" 
+                                 class="rule-image"
+                                 onclick="window.open(this.src, '_blank')">
+                            <figcaption>{{ rule.images[0].description }}</figcaption>
+                        </figure>
+                    {% else %}
+                        <!-- Multiple images in grid -->
+                        <div class="image-grid">
+                            {% for image in rule.images %}
+                            <figure>
+                                <img src="{{ image.url }}" 
+                                     alt="{{ image.alt_text }}" 
+                                     class="rule-image"
+                                     onclick="window.open(this.src, '_blank')">
+                                <figcaption>{{ image.description }}</figcaption>
+                            </figure>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+            {% endfor %}
+        </section>
+        {% endif %}
+    </main>
+    
+    <footer style="margin-top: 60px; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+        <p style="color: #666;">
+            This document is auto-generated from the ESD & Latchup Guidelines system.<br>
+            For questions or updates, contact the Design Team.
+        </p>
+    </footer>
+</body>
+</html>
